@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~           Copyright © 2015 Stanislav Petriakov
+  ~  Distributed under the Boost Software License, Version 1.0.
+  ~     (See accompanying file LICENSE_1_0.txt or copy at
+  ~           http://www.boost.org/LICENSE_1_0.txt)
+  -->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
+
+    <SeekBar
+        android:id="@+id/progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginTop="8dp"
+        android:gravity="center_horizontal">
+
+        <ImageButton
+            android:id="@+id/rewind"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:background="@null"
+            android:scaleType="center"
+            android:src="@drawable/ic_fast_rewind_black_24dp"
+            tools:ignore="ContentDescription"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_play_arrow_white_24dp"/>
+
+        <ImageButton
+            android:id="@+id/forward"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:background="@null"
+            android:scaleType="center"
+            android:src="@drawable/ic_fast_forward_black_24dp"
+            tools:ignore="ContentDescription"/>
+    </LinearLayout>
+</FrameLayout>

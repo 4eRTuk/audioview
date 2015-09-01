@@ -1,3 +1,10 @@
+<!--
+  ~           Copyright © 2015 Stanislav Petriakov
+  ~  Distributed under the Boost Software License, Version 1.0.
+  ~     (See accompanying file LICENSE_1_0.txt or copy at
+  ~           http://www.boost.org/LICENSE_1_0.txt)
+  -->
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
@@ -8,9 +15,8 @@
                 android:paddingBottom="@dimen/activity_vertical_margin"
                 tools:context=".MainActivity">
 
-    <TextView
-        android:text="@string/hello_world"
-        android:layout_width="wrap_content"
+    <com.keenfin.audioview.AudioView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
 </RelativeLayout>
