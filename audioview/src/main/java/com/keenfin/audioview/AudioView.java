@@ -26,6 +26,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     protected MediaPlayer mMediaPlayer;
     protected List mTracks;
     protected int mCurrentTrack = 0;
+    protected boolean mIsPrepared = false;
 
     protected FloatingActionButton mPlay;
     protected ImageButton mRewind, mForward;
@@ -58,6 +59,25 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
 
         mTracks = new ArrayList();
         mMediaPlayer = new MediaPlayer();
+
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                if (isCorrectTrack(mCurrentTrack + 1)) {
+                    mCurrentTrack++;
+                    startTrack();
+                } else {
+                    setPlayIcon();
+                }
+            }
+        });
+
+        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mIsPrepared = true;
+            }
+        });
     }
 
     @Override
@@ -97,7 +117,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     }
 
     private void controlAudio() {
-        if (mMediaPlayer.isPlaying()) {
+        if (mIsPrepared && mMediaPlayer.isPlaying()) {
             pause();
         } else {
             start();
@@ -105,6 +125,9 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     }
 
     private void startTrack() {
+        if (mTracks.size()  == 0)
+            return;
+
         Object track = mTracks.get(mCurrentTrack);
 
         try {
@@ -138,30 +161,53 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     }
 
     public void setDataSource(String path) throws IOException {
+        mIsPrepared = false;
         mMediaPlayer.reset();
         mMediaPlayer.setDataSource(path);
         mMediaPlayer.prepare();
     }
 
     public void setDataSource(Uri uri) throws IOException {
+        mIsPrepared = false;
         mMediaPlayer.reset();
         mMediaPlayer.setDataSource(getContext(), uri);
         mMediaPlayer.prepare();
     }
 
     public void setDataSource(FileDescriptor fd) throws IOException {
+        mIsPrepared = false;
         mMediaPlayer.reset();
         mMediaPlayer.setDataSource(fd);
         mMediaPlayer.prepare();
     }
 
     public void start() {
-        mMediaPlayer.start();
-        mPlay.setImageResource(R.drawable.ic_pause_white_24dp);
+        if (mIsPrepared) {
+            mMediaPlayer.start();
+            setPauseIcon();
+        }
     }
 
     public void pause() {
-        mMediaPlayer.pause();
+        if (mIsPrepared && mMediaPlayer.isPlaying())
+            mMediaPlayer.pause();
+
+        setPlayIcon();
+    }
+
+    public void stop() {
+        if (mIsPrepared && mMediaPlayer.isPlaying())
+            mMediaPlayer.stop();
+
+        setPlayIcon();
+    }
+
+    protected void setPauseIcon() {
+        mPlay.setImageResource(R.drawable.ic_pause_white_24dp);
+    }
+
+    protected void setPlayIcon() {
         mPlay.setImageResource(R.drawable.ic_play_arrow_white_24dp);
     }
+
 }
