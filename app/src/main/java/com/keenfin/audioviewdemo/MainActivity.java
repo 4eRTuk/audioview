@@ -4,6 +4,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.keenfin.audioview.AudioView;
+import com.keenfin.sfcdialog.SimpleFileChooser;
+
+import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,5 +40,30 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void selectTrack(View view) {
+        SimpleFileChooser sfc = new SimpleFileChooser();
+        sfc.setOnChosenListener(new SimpleFileChooser.SimpleFileChooserListener() {
+            @Override
+            public void onFileChosen(File file) {
+                try {
+                    ((AudioView) findViewById(R.id.audioview)).setDataSource(file.getPath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onDirectoryChosen(File file) {
+
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+        sfc.show(getFragmentManager(), "SelectTrackDialog");
     }
 }

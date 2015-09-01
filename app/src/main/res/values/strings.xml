@@ -1,6 +1,13 @@
+<!--
+  ~           Copyright © 2015 Stanislav Petriakov
+  ~  Distributed under the Boost Software License, Version 1.0.
+  ~     (See accompanying file LICENSE_1_0.txt or copy at
+  ~           http://www.boost.org/LICENSE_1_0.txt)
+  -->
+
 <resources>
     <string name="app_name">AudioViewDemo</string>
 
-    <string name="hello_world">Hello world!</string>
+    <string name="select_track">Select track</string>
     <string name="action_settings">Settings</string>
 </resources>
