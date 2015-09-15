@@ -15,11 +15,11 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class AudioView extends FrameLayout implements View.OnClickListener {
@@ -30,6 +30,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
 
     protected FloatingActionButton mPlay;
     protected ImageButton mRewind, mForward;
+    protected SeekBar mProgress;
 
     public AudioView(Context context) {
         super(context);
@@ -53,6 +54,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         mPlay = (FloatingActionButton) findViewById(R.id.play);
         mRewind = (ImageButton) findViewById(R.id.rewind);
         mForward = (ImageButton) findViewById(R.id.forward);
+        mProgress = (SeekBar) findViewById(R.id.progress);
         mPlay.setOnClickListener(this);
         mRewind.setOnClickListener(this);
         mForward.setOnClickListener(this);
@@ -76,6 +78,24 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             @Override
             public void onPrepared(MediaPlayer mp) {
                 mIsPrepared = true;
+                mProgress.setMax(mp.getDuration());
+            }
+        });
+
+        mProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mMediaPlayer.seekTo(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                mMediaPlayer.pause();
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                mMediaPlayer.start();
             }
         });
     }
