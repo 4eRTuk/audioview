@@ -7,9 +7,11 @@
 
 package com.keenfin.audioview;
 
+import android.app.Activity;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.util.AttributeSet;
 import android.view.View;
@@ -27,6 +29,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     protected List mTracks;
     protected int mCurrentTrack = 0;
     protected boolean mIsPrepared = false;
+    protected long mProgressDelay;
 
     protected FloatingActionButton mPlay;
     protected ImageButton mRewind, mForward;
@@ -62,6 +65,19 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         mTracks = new ArrayList();
         mMediaPlayer = new MediaPlayer();
 
+        final Handler mHandler = new Handler();
+        if (getContext() instanceof Activity) {
+            ((Activity) getContext()).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+                        mProgress.setProgress(mMediaPlayer.getCurrentPosition());
+                    }
+                    mHandler.postDelayed(this, mProgressDelay);
+                }
+            });
+        }
+
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -69,6 +85,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
                     mCurrentTrack++;
                     startTrack();
                 } else {
+                    mp.pause();
                     setPlayIcon();
                 }
             }
@@ -78,14 +95,17 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             @Override
             public void onPrepared(MediaPlayer mp) {
                 mIsPrepared = true;
+                mProgress.setProgress(0);
                 mProgress.setMax(mp.getDuration());
+                mProgressDelay = mp.getDuration() / 100;
             }
         });
 
         mProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mMediaPlayer.seekTo(progress);
+                if (fromUser)
+                    mMediaPlayer.seekTo(progress);
             }
 
             @Override
