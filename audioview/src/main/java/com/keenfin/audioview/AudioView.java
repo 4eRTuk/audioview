@@ -8,16 +8,19 @@
 package com.keenfin.audioview;
 
 import android.content.Context;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
+import android.text.method.ScrollingMovementMethod;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -29,12 +32,15 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
 
     protected MediaPlayer mMediaPlayer;
     protected List mTracks;
+    protected Object mCurrentSource;
+
     protected int mCurrentTrack = 0;
     protected boolean mIsPrepared = false;
     protected long mProgressDelay;
 
     protected FloatingActionButton mPlay;
     protected ImageButton mRewind, mForward;
+    protected TextView mTitle, mTime;
     protected SeekBar mProgress;
     protected Handler mHandler;
 
@@ -61,6 +67,10 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         mRewind = (ImageButton) findViewById(R.id.rewind);
         mForward = (ImageButton) findViewById(R.id.forward);
         mProgress = (SeekBar) findViewById(R.id.progress);
+        mTitle = (TextView) findViewById(R.id.title);
+        mTitle.setSelected(true);
+        mTitle.setMovementMethod(new ScrollingMovementMethod());
+        mTime = (TextView) findViewById(R.id.time);
         mPlay.setOnClickListener(this);
         mRewind.setOnClickListener(this);
         mForward.setOnClickListener(this);
@@ -114,11 +124,15 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             @Override
             public void onPrepared(MediaPlayer mp) {
                 mIsPrepared = true;
+                mTitle.setText(getTrackTitle());
                 mProgress.setProgress(0);
                 mProgress.setMax(mp.getDuration());
                 mProgressDelay = mp.getDuration() / 100;
-                if (mProgressDelay < 100)
-                    mProgressDelay = 100;
+                if (mProgressDelay < 1000) {
+                    if (mProgressDelay < 100)
+                        mProgressDelay = 100;
+                } else
+                    mProgressDelay = 1000;
             }
         });
 
@@ -127,6 +141,8 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser)
                     mMediaPlayer.seekTo(progress);
+
+                mTime.setText(getTrackTime());
             }
 
             @Override
@@ -180,7 +196,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         return mTracks.size() > 0 && trackPosition >= 0 && trackPosition < mTracks.size();
     }
 
-    private void controlAudio() {
+    protected void controlAudio() {
         if (mIsPrepared && mMediaPlayer.isPlaying()) {
             pause();
         } else {
@@ -188,7 +204,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         }
     }
 
-    private void startTrack() {
+    protected void startTrack() {
         if (mTracks.size() == 0)
             return;
 
@@ -225,24 +241,30 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     }
 
     public void setDataSource(String path) throws IOException {
-        mIsPrepared = false;
-        mMediaPlayer.reset();
+        reset();
         mMediaPlayer.setDataSource(path);
-        mMediaPlayer.prepare();
+        prepare(path);
     }
 
     public void setDataSource(Uri uri) throws IOException {
-        mIsPrepared = false;
-        mMediaPlayer.reset();
+        reset();
         mMediaPlayer.setDataSource(getContext(), uri);
-        mMediaPlayer.prepare();
+        prepare(uri);
     }
 
     public void setDataSource(FileDescriptor fd) throws IOException {
+        mMediaPlayer.setDataSource(fd);
+        prepare(fd);
+    }
+
+    protected void reset() {
         mIsPrepared = false;
         mMediaPlayer.reset();
-        mMediaPlayer.setDataSource(fd);
+    }
+
+    protected void prepare(Object source) throws IOException {
         mMediaPlayer.prepare();
+        mCurrentSource = source;
     }
 
     public void start() {
@@ -277,4 +299,50 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         mPlay.setImageResource(R.drawable.ic_play_arrow_white_24dp);
     }
 
+    protected String getTrackTitle() {
+        MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+        if (mCurrentSource instanceof String)
+            metaRetriever.setDataSource((String) mCurrentSource);
+        if (mCurrentSource instanceof Uri)
+            metaRetriever.setDataSource((getContext()), (Uri) mCurrentSource);
+        if (mCurrentSource instanceof FileDescriptor)
+            metaRetriever.setDataSource((FileDescriptor) mCurrentSource);
+
+        String artist = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+        String title = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        metaRetriever.release();
+
+        if (artist != null && title != null)
+            return artist + " - " + title;
+        if (artist == null && title != null)
+            return title;
+        return artist;
+    }
+
+    protected String getTrackTime() {
+        return formatTime(mMediaPlayer.getCurrentPosition()) + " / " + formatTime(mMediaPlayer.getDuration());
+    }
+
+    protected String formatTime(int millis) {
+        int hour, min;
+        hour = min = 0;
+        millis /= 1000;
+
+        if (millis >= 60) {
+            min = millis / 60;
+            millis %= 60;
+        }
+
+        if (min >= 60) {
+            hour = min / 60;
+            min %= 60;
+        }
+
+        String result = "";
+        if (hour > 0)
+            result += String.format("%02d:", hour);
+        result += String.format("%02d:%02d", min, millis);
+
+        return result;
+    }
 }
