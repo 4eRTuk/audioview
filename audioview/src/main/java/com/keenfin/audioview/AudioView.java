@@ -7,11 +7,11 @@
 
 package com.keenfin.audioview;
 
-import android.app.Activity;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.util.AttributeSet;
 import android.view.View;
@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AudioView extends FrameLayout implements View.OnClickListener {
+    enum SEEKBAR_STATE {STICK, UNSTICK}
+
     protected MediaPlayer mMediaPlayer;
     protected List mTracks;
     protected int mCurrentTrack = 0;
@@ -34,6 +36,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     protected FloatingActionButton mPlay;
     protected ImageButton mRewind, mForward;
     protected SeekBar mProgress;
+    protected Handler mHandler;
 
     public AudioView(Context context) {
         super(context);
@@ -65,18 +68,34 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         mTracks = new ArrayList();
         mMediaPlayer = new MediaPlayer();
 
-        final Handler mHandler = new Handler();
-        if (getContext() instanceof Activity) {
-            ((Activity) getContext()).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
-                        mProgress.setProgress(mMediaPlayer.getCurrentPosition());
-                    }
-                    mHandler.postDelayed(this, mProgressDelay);
+        final Runnable seekBarUpdateTask = new Runnable() {
+            @Override
+            public void run() {
+                if (mProgress.getProgress() < mMediaPlayer.getCurrentPosition())
+                    mProgress.setProgress(mMediaPlayer.getCurrentPosition());
+
+                mHandler.postDelayed(this, mProgressDelay);
+            }
+        };
+
+        mHandler = new Handler(new Handler.Callback() {
+            Thread mUiThread;
+
+            @Override
+            public boolean handleMessage(Message msg) {
+                if (msg.what == SEEKBAR_STATE.UNSTICK.ordinal()) {
+                    if (mUiThread != null && !mUiThread.isInterrupted())
+                        mUiThread.interrupt();
+                    return true;
+                } else if (msg.what == SEEKBAR_STATE.STICK.ordinal()) {
+                    mUiThread = new Thread(seekBarUpdateTask);
+                    mUiThread.start();
+                    mProgress.setProgress(mMediaPlayer.getCurrentPosition());
+                    return true;
                 }
-            });
-        }
+                return false;
+            }
+        });
 
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -85,8 +104,8 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
                     mCurrentTrack++;
                     startTrack();
                 } else {
-                    mp.pause();
-                    setPlayIcon();
+                    pause();
+                    mProgress.setProgress(mMediaPlayer.getDuration());
                 }
             }
         });
@@ -98,6 +117,8 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
                 mProgress.setProgress(0);
                 mProgress.setMax(mp.getDuration());
                 mProgressDelay = mp.getDuration() / 100;
+                if (mProgressDelay < 100)
+                    mProgressDelay = 100;
             }
         });
 
@@ -110,12 +131,15 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                mMediaPlayer.pause();
+                seekBar.setTag(mMediaPlayer.isPlaying());
+                if (mMediaPlayer.isPlaying())
+                    mMediaPlayer.pause();
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mMediaPlayer.start();
+                if ((boolean) seekBar.getTag())
+                    mMediaPlayer.start();
             }
         });
     }
@@ -165,7 +189,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     }
 
     private void startTrack() {
-        if (mTracks.size()  == 0)
+        if (mTracks.size() == 0)
             return;
 
         Object track = mTracks.get(mCurrentTrack);
@@ -225,6 +249,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         if (mIsPrepared) {
             mMediaPlayer.start();
             setPauseIcon();
+            mHandler.sendEmptyMessage(SEEKBAR_STATE.STICK.ordinal());
         }
     }
 
@@ -233,6 +258,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             mMediaPlayer.pause();
 
         setPlayIcon();
+        mHandler.sendEmptyMessage(SEEKBAR_STATE.UNSTICK.ordinal());
     }
 
     public void stop() {
@@ -240,6 +266,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             mMediaPlayer.stop();
 
         setPlayIcon();
+        mHandler.sendEmptyMessage(SEEKBAR_STATE.UNSTICK.ordinal());
     }
 
     protected void setPauseIcon() {
