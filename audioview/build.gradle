@@ -7,6 +7,30 @@
 
 apply plugin: 'com.android.library'
 
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'audioview'
+
+    publishedGroupId = 'com.4ert'
+    libraryName = 'AudioView'
+    artifact = 'audioview'
+
+    libraryDescription = 'Android AudioView. It\'s simple wrapper for MediaPlayer with a few controls.'
+
+    siteUrl = 'https://github.com/4eRTuk/audioview'
+    gitUrl = 'https://github.com/4eRTuk/audioview.git'
+
+    libraryVersion = '0.1'
+
+    developerId = '4ert'
+    developerName = 'Stanislav Petriakov'
+    developerEmail = 'becomeglory@gmail.com'
+
+    licenseName = 'Boost Software License, Version 1.0'
+    licenseUrl = 'http://www.boost.org/LICENSE_1_0.txt'
+    allLicenses = ["Boost-1.0"]
+}
+
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
@@ -15,7 +39,7 @@ android {
         minSdkVersion 10
         targetSdkVersion 23
         versionCode 1
-        versionName "1.0"
+        versionName "0.1"
     }
     buildTypes {
         release {
@@ -24,6 +48,9 @@ android {
         }
     }
 }
+
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
