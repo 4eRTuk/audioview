@@ -181,6 +181,8 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     protected void rewindTrack() {
         if (isCorrectTrack(mCurrentTrack - 1))
             mCurrentTrack--;
+        else
+            return;
 
         startTrack();
     }
@@ -188,6 +190,8 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     protected void forwardTrack() {
         if (isCorrectTrack(mCurrentTrack + 1))
             mCurrentTrack++;
+        else
+            return;
 
         startTrack();
     }
@@ -209,6 +213,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             return;
 
         Object track = mTracks.get(mCurrentTrack);
+        boolean wasPlaying = mMediaPlayer.isPlaying();
 
         try {
             if (track.getClass() == String.class) {
@@ -221,6 +226,9 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        if (wasPlaying)
+            mMediaPlayer.start();
     }
 
     public void setDataSource(List tracks) throws RuntimeException, IOException {
