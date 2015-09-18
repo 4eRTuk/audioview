@@ -112,7 +112,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             public void onCompletion(MediaPlayer mp) {
                 if (isCorrectTrack(mCurrentTrack + 1)) {
                     mCurrentTrack++;
-                    startTrack();
+                    selectTrack();
                 } else {
                     pause();
                     mProgress.setProgress(mMediaPlayer.getDuration());
@@ -172,28 +172,28 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         if (i == R.id.play) {
             controlAudio();
         } else if (i == R.id.rewind) {
-            rewindTrack();
+            previousTrack();
         } else if (i == R.id.forward) {
-            forwardTrack();
+            nextTrack();
         }
     }
 
-    protected void rewindTrack() {
+    protected void previousTrack() {
         if (isCorrectTrack(mCurrentTrack - 1))
             mCurrentTrack--;
         else
             return;
 
-        startTrack();
+        selectTrack();
     }
 
-    protected void forwardTrack() {
+    protected void nextTrack() {
         if (isCorrectTrack(mCurrentTrack + 1))
             mCurrentTrack++;
         else
             return;
 
-        startTrack();
+        selectTrack();
     }
 
     protected boolean isCorrectTrack(int trackPosition) {
@@ -208,7 +208,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         }
     }
 
-    protected void startTrack() {
+    protected void selectTrack() {
         if (mTracks.size() == 0)
             return;
 
@@ -244,7 +244,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             //noinspection unchecked
             mTracks = new ArrayList(tracks);
             mCurrentTrack = 0;
-            startTrack();
+            selectTrack();
         }
     }
 
