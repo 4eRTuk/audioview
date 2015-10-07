@@ -81,7 +81,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         final Runnable seekBarUpdateTask = new Runnable() {
             @Override
             public void run() {
-                if (mProgress.getProgress() < mMediaPlayer.getCurrentPosition())
+                if (mIsPrepared && mProgress.getProgress() < mMediaPlayer.getCurrentPosition())
                     mProgress.setProgress(mMediaPlayer.getCurrentPosition());
 
                 mHandler.postDelayed(this, mProgressDelay);
@@ -164,6 +164,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mMediaPlayer.release();
+        mIsPrepared = false;
     }
 
     @Override
