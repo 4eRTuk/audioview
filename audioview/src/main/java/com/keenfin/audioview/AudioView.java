@@ -210,7 +210,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     }
 
     protected void selectTrack() {
-        if (mTracks.size() == 0)
+        if (mTracks.size() < 2)
             return;
 
         Object track = mTracks.get(mCurrentTrack);
@@ -262,6 +262,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     }
 
     public void setDataSource(FileDescriptor fd) throws IOException {
+        reset();
         mMediaPlayer.setDataSource(fd);
         prepare(fd);
     }
