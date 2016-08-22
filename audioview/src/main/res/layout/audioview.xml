@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~           Copyright © 2015 Stanislav Petriakov
+  ~           Copyright © 2015-2016 Stanislav Petriakov
   ~  Distributed under the Boost Software License, Version 1.0.
   ~     (See accompanying file LICENSE_1_0.txt or copy at
   ~           http://www.boost.org/LICENSE_1_0.txt)
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
@@ -21,23 +22,30 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:marqueeRepeatLimit="marquee_forever"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
         android:scrollHorizontally="true"
         android:singleLine="true"/>
 
     <SeekBar
         android:id="@+id/progress"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"/>
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:gravity="center_horizontal">
+            android:gravity="center_horizontal"
+            android:paddingTop="8dp">
 
             <ImageButton
                 android:id="@+id/rewind"
@@ -55,7 +63,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
-                android:src="@drawable/ic_play_arrow_white_24dp"/>
+                android:src="@drawable/ic_play_arrow_white_24dp"
+                app:useCompatPadding="true"/>
 
             <ImageButton
                 android:id="@+id/forward"
