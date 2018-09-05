@@ -223,7 +223,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
 
         boolean fix = mCurrentSource != null && mTracks.size() == 0;
         if (fix)
-            mTracks.add(mCurrentTrack);
+            mTracks.add(mCurrentSource);
         if (mTracks.size() > 0)
             selectTrack();
         if (fix)
