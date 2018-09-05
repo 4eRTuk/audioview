@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~           Copyright © 2018 Stanislav Petriakov
+  ~  Distributed under the Boost Software License, Version 1.0.
+  ~     (See accompanying file LICENSE_1_0.txt or copy at
+  ~           http://www.boost.org/LICENSE_1_0.txt)
+  -->
+
+<resources>
+    <declare-styleable name="AudioView">
+        <attr name="showTitle" format="boolean"/>
+        <attr name="selectControls" format="boolean"/>
+        <attr name="primaryColor" format="color"/>
+        <attr name="minified" format="boolean"/>
+    </declare-styleable>
+</resources>

@@ -1,5 +1,5 @@
 /*
- *           Copyright © 2015 Stanislav Petriakov
+ *           Copyright © 2015-2016, 2018 Stanislav Petriakov
  *  Distributed under the Boost Software License, Version 1.0.
  *     (See accompanying file LICENSE_1_0.txt or copy at
  *           http://www.boost.org/LICENSE_1_0.txt)
@@ -8,11 +8,19 @@
 package com.keenfin.audioview;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.content.res.TypedArray;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.ColorInt;
+import android.support.annotation.FloatRange;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.text.method.ScrollingMovementMethod;
 import android.util.AttributeSet;
@@ -44,39 +52,73 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     protected SeekBar mProgress;
     protected Handler mHandler;
 
+    protected boolean mShowTitle = true;
+    protected boolean mSelectControls = true;
+    protected boolean mMinified = false;
+    protected int mPrimaryColor = 0;
+
     public AudioView(Context context) {
         super(context);
-        init();
+        init(null, null);
     }
 
     public AudioView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
+        init(context, attrs);
     }
 
     public AudioView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
+        init(context, attrs);
     }
 
-    private void init() {
-        View view = inflate(getContext(), R.layout.audioview, null);
+    private void init(@Nullable Context context, AttributeSet attrs) {
+        if(isInEditMode())
+            return;
+
+        if (context != null && attrs != null) {
+            TypedArray styleable = context.obtainStyledAttributes(attrs, R.styleable.AudioView, 0, 0);
+            mShowTitle = styleable.getBoolean(R.styleable.AudioView_showTitle, true);
+            mSelectControls = styleable.getBoolean(R.styleable.AudioView_selectControls, true);
+            mMinified = styleable.getBoolean(R.styleable.AudioView_minified, false);
+            if (styleable.hasValue(R.styleable.AudioView_primaryColor))
+                mPrimaryColor = styleable.getColor(R.styleable.AudioView_primaryColor, 0xFF000000);
+            styleable.recycle();
+        }
+
+        int layout = mMinified ? R.layout.audioview_min : R.layout.audioview;
+        View view = inflate(getContext(), layout, null);
         addView(view);
 
-        mPlay = (FloatingActionButton) findViewById(R.id.play);
-        mRewind = (ImageButton) findViewById(R.id.rewind);
-        mForward = (ImageButton) findViewById(R.id.forward);
-        mProgress = (SeekBar) findViewById(R.id.progress);
-        mTitle = (TextView) findViewById(R.id.title);
+        mPlay = findViewById(R.id.play);
+        mRewind = findViewById(R.id.rewind);
+        mForward = findViewById(R.id.forward);
+        if (!mSelectControls) {
+            mRewind.setVisibility(GONE);
+            mForward.setVisibility(GONE);
+        }
+        mProgress = findViewById(R.id.progress);
+        mTitle = findViewById(R.id.title);
         mTitle.setSelected(true);
         mTitle.setMovementMethod(new ScrollingMovementMethod());
-        mTime = (TextView) findViewById(R.id.time);
+        if (!mShowTitle)
+            mTitle.setVisibility(GONE);
+        mTime = findViewById(R.id.time);
         mPlay.setOnClickListener(this);
         mRewind.setOnClickListener(this);
         mForward.setOnClickListener(this);
 
+        if (mPrimaryColor != 0) {
+            mProgress.getProgressDrawable().setColorFilter(mPrimaryColor, PorterDuff.Mode.MULTIPLY);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                mProgress.getThumb().setColorFilter(mPrimaryColor, PorterDuff.Mode.SRC_ATOP);
+            }
+            mPlay.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+            mPlay.setRippleColor(darkenColor(mPrimaryColor, 0.87f));
+        }
+
         mTracks = new ArrayList();
-        mMediaPlayer = new MediaPlayer();
+        initMediaPlayer();
 
         final Runnable seekBarUpdateTask = new Runnable() {
             @Override
@@ -107,6 +149,40 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             }
         });
 
+        mProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser)
+                    mMediaPlayer.seekTo(progress);
+
+                mTime.setText(getTrackTime());
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                seekBar.setTag(mMediaPlayer.isPlaying());
+                if (mMediaPlayer.isPlaying())
+                    mMediaPlayer.pause();
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if ((boolean) seekBar.getTag())
+                    mMediaPlayer.start();
+            }
+        });
+    }
+
+    public static @ColorInt int darkenColor(@ColorInt int color, @FloatRange(from=0, to=1) float value) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        hsv[2] *= value;
+        return Color.HSVToColor(hsv);
+    }
+
+    private void initMediaPlayer() {
+        mMediaPlayer = new MediaPlayer();
+
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -136,28 +212,15 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             }
         });
 
-        mProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser)
-                    mMediaPlayer.seekTo(progress);
+        if (mTracks.size() > 0)
+            selectTrack();
+    }
 
-                mTime.setText(getTrackTime());
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                seekBar.setTag(mMediaPlayer.isPlaying());
-                if (mMediaPlayer.isPlaying())
-                    mMediaPlayer.pause();
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                if ((boolean) seekBar.getTag())
-                    mMediaPlayer.start();
-            }
-        });
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (!mIsPrepared)
+            initMediaPlayer();
     }
 
     @Override
@@ -232,7 +295,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             mMediaPlayer.start();
     }
 
-    public void setDataSource(List tracks) throws RuntimeException, IOException {
+    public void setDataSource(List tracks) throws RuntimeException {
         if (tracks.size() > 0) {
             Object itemClass = tracks.get(0);
             boolean isCorrectClass = itemClass.getClass() == String.class

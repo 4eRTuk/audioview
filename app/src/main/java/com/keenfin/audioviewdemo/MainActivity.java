@@ -1,5 +1,5 @@
 /*
- *           Copyright © 2015-2016 Stanislav Petriakov
+ *           Copyright © 2015-2016, 2018 Stanislav Petriakov
  *  Distributed under the Boost Software License, Version 1.0.
  *     (See accompanying file LICENSE_1_0.txt or copy at
  *           http://www.boost.org/LICENSE_1_0.txt)
@@ -7,8 +7,9 @@
 
 package com.keenfin.audioviewdemo;
 
+import android.app.Activity;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+//import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,10 +19,9 @@ import com.keenfin.audioview.AudioView;
 import com.keenfin.sfcdialog.SimpleFileChooser;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     private SimpleFileChooser mSFCDialog;
 
     @Override
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                     ArrayList<String> a = new ArrayList<>();
                     a.add(file.getPath());
                     ((AudioView) findViewById(R.id.audioview)).setDataSource(a);
-                } catch (IOException e) {
+                } catch (RuntimeException e) {
                     e.printStackTrace();
                 }
             }
