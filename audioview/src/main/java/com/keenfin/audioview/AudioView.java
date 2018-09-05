@@ -7,6 +7,7 @@
 
 package com.keenfin.audioview;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
@@ -39,7 +40,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     enum SEEKBAR_STATE {STICK, UNSTICK}
 
     protected MediaPlayer mMediaPlayer;
-    protected List mTracks;
+    protected ArrayList<Object> mTracks;
     protected Object mCurrentSource;
 
     protected int mCurrentTrack = 0;
@@ -48,7 +49,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
 
     protected FloatingActionButton mPlay;
     protected ImageButton mRewind, mForward;
-    protected TextView mTitle, mTime;
+    protected TextView mTitle, mTime, mTotalTime;
     protected SeekBar mProgress;
     protected Handler mHandler;
 
@@ -104,6 +105,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         if (!mShowTitle)
             mTitle.setVisibility(GONE);
         mTime = findViewById(R.id.time);
+        mTotalTime = findViewById(R.id.total_time);
         mPlay.setOnClickListener(this);
         mRewind.setOnClickListener(this);
         mForward.setOnClickListener(this);
@@ -117,7 +119,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             mPlay.setRippleColor(darkenColor(mPrimaryColor, 0.87f));
         }
 
-        mTracks = new ArrayList();
+        mTracks = new ArrayList<>();
         initMediaPlayer();
 
         final Runnable seekBarUpdateTask = new Runnable() {
@@ -152,10 +154,15 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         mProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (!mIsPrepared)
+                    return;
                 if (fromUser)
                     mMediaPlayer.seekTo(progress);
 
-                mTime.setText(getTrackTime());
+                if (mTotalTime != null)
+                    mTime.setText(formatTime(mMediaPlayer.getCurrentPosition()));
+                else
+                    mTime.setText(getTrackTime());
             }
 
             @Override
@@ -201,6 +208,8 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             public void onPrepared(MediaPlayer mp) {
                 mIsPrepared = true;
                 mTitle.setText(getTrackTitle());
+                if (mTotalTime != null)
+                    mTotalTime.setText(formatTime(mMediaPlayer.getDuration()));
                 mProgress.setProgress(0);
                 mProgress.setMax(mp.getDuration());
                 mProgressDelay = mp.getDuration() / 100;
@@ -212,8 +221,13 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             }
         });
 
+        boolean fix = mCurrentSource != null && mTracks.size() == 0;
+        if (fix)
+            mTracks.add(mCurrentTrack);
         if (mTracks.size() > 0)
             selectTrack();
+        if (fix)
+            mTracks.remove(0);
     }
 
     @Override
@@ -396,6 +410,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         return formatTime(mMediaPlayer.getCurrentPosition()) + " / " + formatTime(mMediaPlayer.getDuration());
     }
 
+    @SuppressLint("DefaultLocale")
     protected String formatTime(int millis) {
         int hour, min;
         hour = min = 0;
