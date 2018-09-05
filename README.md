@@ -1,15 +1,42 @@
- [ ![Download](https://api.bintray.com/packages/4ert/maven/audioview/images/download.svg) ](https://bintray.com/4ert/maven/audioview/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/4ert/maven/audioview/images/download.svg) ](https://bintray.com/4ert/maven/audioview/_latestVersion)
 
 # AudioView
 Simple Android audio view with a few controls. Basically it's a MediaPlayer wrapper.
 
-[See demo](https://raw.githubusercontent.com/4eRTuk/audioview/master/demo.png)
+[See picture](https://raw.githubusercontent.com/4eRTuk/audioview/master/demo.png)
+
+[See demo app](https://github.com/4eRTuk/audioview/tree/master/app)
 
 ## Usage with Gradle
+
+1. **Add dependency**
+
 ``` gradle
 dependencies {
     implementation 'com.4ert:audioview:0.3.2'
 }
+```
+
+2. **Add layout**
+``` xml
+<com.keenfin.audioview.AudioView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"/>
+```
+
+3. **Set file data source**
+``` java
+audioView.setDataSource("/path/to/file");
+audioView.setDataSource(Uri);
+audioView.setDataSource(FileDescriptor);
+audioView.setDataSource(List<String/Uri/FileDescriptor>);
+```
+
+4. **Control playback if needed**
+``` java
+audioView.start();
+audioView.pause();
+audioView.stop();
 ```
 
 ## Styles
