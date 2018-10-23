@@ -207,7 +207,9 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
             @Override
             public void onPrepared(MediaPlayer mp) {
                 mIsPrepared = true;
-                mTitle.setText(getTrackTitle());
+                if (mShowTitle) {
+                    mTitle.setText(getTrackTitle());
+                }
                 if (mTotalTime != null)
                     mTotalTime.setText(formatTime(mMediaPlayer.getDuration()));
                 mProgress.setProgress(0);
