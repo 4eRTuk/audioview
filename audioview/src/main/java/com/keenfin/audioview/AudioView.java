@@ -45,6 +45,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
 
     protected int mCurrentTrack = 0;
     protected boolean mIsPrepared = false;
+    protected boolean mIsAttached = false;
     protected long mProgressDelay;
 
     protected FloatingActionButton mPlay;
@@ -74,7 +75,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     }
 
     private void init(@Nullable Context context, AttributeSet attrs) {
-        if(isInEditMode())
+        if (isInEditMode())
             return;
 
         if (context != null && attrs != null) {
@@ -112,6 +113,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
 
         if (mPrimaryColor != 0) {
             mProgress.getProgressDrawable().setColorFilter(mPrimaryColor, PorterDuff.Mode.MULTIPLY);
+            mProgress.getIndeterminateDrawable().setColorFilter(mPrimaryColor, PorterDuff.Mode.MULTIPLY);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 mProgress.getThumb().setColorFilter(mPrimaryColor, PorterDuff.Mode.SRC_ATOP);
             }
@@ -180,7 +182,8 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         });
     }
 
-    public static @ColorInt int darkenColor(@ColorInt int color, @FloatRange(from=0, to=1) float value) {
+    public static @ColorInt
+    int darkenColor(@ColorInt int color, @FloatRange(from = 0, to = 1) float value) {
         float[] hsv = new float[3];
         Color.colorToHSV(color, hsv);
         hsv[2] *= value;
@@ -206,20 +209,35 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                if (!mIsAttached)
+                    return;
                 mIsPrepared = true;
                 if (mShowTitle) {
-                    mTitle.setText(getTrackTitle());
+                    try {
+                        mTitle.setText(getTrackTitle());
+                    } catch (Exception ignored) {
+                    }
                 }
+
+                int duration = mp.getDuration();
+                String totalTime = "∞";
+                if (duration > 0) {
+                    totalTime = formatTime(duration);
+                    mProgress.setProgress(0);
+                    mProgress.setMax(duration);
+                    mProgressDelay = mp.getDuration() / 100;
+                    if (mProgressDelay < 1000) {
+                        if (mProgressDelay < 100)
+                            mProgressDelay = 100;
+                    } else
+                        mProgressDelay = 1000;
+                } else {
+                    mProgress.setIndeterminate(true);
+                    mProgress.setThumb(null);
+                }
+
                 if (mTotalTime != null)
-                    mTotalTime.setText(formatTime(mMediaPlayer.getDuration()));
-                mProgress.setProgress(0);
-                mProgress.setMax(mp.getDuration());
-                mProgressDelay = mp.getDuration() / 100;
-                if (mProgressDelay < 1000) {
-                    if (mProgressDelay < 100)
-                        mProgressDelay = 100;
-                } else
-                    mProgressDelay = 1000;
+                    mTotalTime.setText(totalTime);
             }
         });
 
@@ -235,6 +253,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        mIsAttached = true;
         if (!mIsPrepared)
             initMediaPlayer();
     }
@@ -242,6 +261,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        mIsAttached = false;
         mMediaPlayer.release();
         mIsPrepared = false;
     }
@@ -314,9 +334,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     public void setDataSource(List tracks) throws RuntimeException {
         if (tracks.size() > 0) {
             Object itemClass = tracks.get(0);
-            boolean isCorrectClass = itemClass.getClass() == String.class
-                    || itemClass.getClass() == Uri.class
-                    || itemClass.getClass() == FileDescriptor.class;
+            boolean isCorrectClass = itemClass.getClass() == String.class || itemClass.getClass() == Uri.class || itemClass.getClass() == FileDescriptor.class;
 
             if (!isCorrectClass)
                 throw new RuntimeException("AudioView supports only String, Uri, FileDescriptor data sources now.");
