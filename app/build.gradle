@@ -27,7 +27,12 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.4ert:sfcdialog:0.2'
-    compile project(':audioview')
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.4ert:sfcdialog:0.2'
+    implementation project(':audioview')
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation('com.android.support:support-compat:27.1.1') {
+        force = true
+    }
 }

@@ -20,16 +20,21 @@
     <com.keenfin.audioview.AudioView
         android:id="@+id/audioview"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:minified="true"
-        app:primaryColor="@android:color/holo_blue_light"
-        app:selectControls="false"
-        app:showTitle="false"/>
+        android:layout_height="wrap_content"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="selectTrack"
         android:text="@string/select_track"/>
+
+    <com.keenfin.audioview.AudioView
+        android:id="@+id/live"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:minified="true"
+        app:primaryColor="@android:color/holo_blue_light"
+        app:selectControls="false"
+        app:showTitle="false"/>
 
 </LinearLayout>

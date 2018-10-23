@@ -7,10 +7,9 @@
 
 package com.keenfin.audioviewdemo;
 
-import android.app.Activity;
-import android.support.annotation.NonNull;
-//import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,15 +18,22 @@ import com.keenfin.audioview.AudioView;
 import com.keenfin.sfcdialog.SimpleFileChooser;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
     private SimpleFileChooser mSFCDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        try {
+            String url = "http://programmerguru.com/android-tutorial/wp-content/uploads/2013/04/hosannatelugu.mp3";
+            ((AudioView) findViewById(R.id.live)).setDataSource(url);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
