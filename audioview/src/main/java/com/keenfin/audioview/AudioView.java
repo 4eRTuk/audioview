@@ -370,7 +370,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     }
 
     protected void prepare(Object source) throws IOException {
-        mMediaPlayer.prepare();
+        mMediaPlayer.prepareAsync();
         mCurrentSource = source;
     }
 
