@@ -12,5 +12,6 @@
         <attr name="selectControls" format="boolean"/>
         <attr name="primaryColor" format="color"/>
         <attr name="minified" format="boolean"/>
+        <attr name="customLayout" format="reference"/>
     </declare-styleable>
 </resources>
