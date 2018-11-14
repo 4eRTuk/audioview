@@ -57,6 +57,7 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     protected boolean mShowTitle = true;
     protected boolean mSelectControls = true;
     protected boolean mMinified = false;
+    protected boolean mLoop = false;
     protected int mPrimaryColor = 0;
 
     public AudioPreparedListener mAudioPreparedListener;
@@ -202,8 +203,19 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
                     mCurrentTrack++;
                     selectTrack();
                 } else {
-                    pause();
-                    mProgress.setProgress(mMediaPlayer.getDuration());
+                    if (!mLoop) {
+                        pause();
+                        mProgress.setProgress(mMediaPlayer.getDuration());
+                        return;
+                    }
+
+                    if (isCorrectTrack(0)) {
+                        mCurrentTrack = 0;
+                        selectTrack();
+                    } else {
+                        pause();
+                        start();
+                    }
                 }
             }
         });
@@ -406,6 +418,10 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
 
         setPlayIcon();
         mHandler.sendEmptyMessage(SEEKBAR_STATE.UNSTICK.ordinal());
+    }
+
+    public void setLoop(boolean loop) {
+        mLoop = loop;
     }
 
     protected void setPauseIcon() {
