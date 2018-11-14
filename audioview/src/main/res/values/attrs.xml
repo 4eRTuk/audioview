@@ -7,7 +7,7 @@
   -->
 
 <resources>
-    <declare-styleable name="AudioView">
+    <declare-styleable name="BaseAudioView">
         <attr name="showTitle" format="boolean"/>
         <attr name="selectControls" format="boolean"/>
         <attr name="primaryColor" format="color"/>
