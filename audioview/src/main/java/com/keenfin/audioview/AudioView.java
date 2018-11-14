@@ -59,6 +59,8 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
     protected boolean mMinified = false;
     protected int mPrimaryColor = 0;
 
+    public AudioPreparedListener mAudioPreparedListener;
+
     public AudioView(Context context) {
         super(context);
         init(null, null);
@@ -238,6 +240,10 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
 
                 if (mTotalTime != null)
                     mTotalTime.setText(totalTime);
+
+                if (mAudioPreparedListener != null) {
+                    mAudioPreparedListener.onSuccess();
+                }
             }
         });
 
@@ -364,13 +370,17 @@ public class AudioView extends FrameLayout implements View.OnClickListener {
         prepare(fd);
     }
 
+    public void setOnAudioPreparedListener(AudioPreparedListener audioPreparedListener) {
+        mAudioPreparedListener = audioPreparedListener;
+    }
+
     protected void reset() {
         mIsPrepared = false;
         mMediaPlayer.reset();
     }
 
     protected void prepare(Object source) throws IOException {
-        mMediaPlayer.prepare();
+        mMediaPlayer.prepareAsync();
         mCurrentSource = source;
     }
 
