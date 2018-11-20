@@ -7,13 +7,12 @@
 
 package com.keenfin.audioviewdemo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-
+import com.keenfin.audioview.AudioService;
 import com.keenfin.audioview.AudioView;
 import com.keenfin.sfcdialog.SimpleFileChooser;
 
@@ -22,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+    public static final String URL = "http://programmerguru.com/android-tutorial/wp-content/uploads/2013/04/hosannatelugu.mp3";
     private SimpleFileChooser mSFCDialog;
 
     @Override
@@ -29,33 +29,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         try {
-            String url = "http://programmerguru.com/android-tutorial/wp-content/uploads/2013/04/hosannatelugu.mp3";
-            ((AudioView) findViewById(R.id.live)).setDataSource(url);
+            ((AudioView) findViewById(R.id.live)).setDataSource(URL);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    protected void onDestroy() {
+        super.onDestroy();
+        Intent audioService = new Intent(this, AudioService.class);
+        audioService.setAction(AudioService.ACTION_STOP_AUDIO);
+        stopService(audioService);
     }
 
     public void selectTrack(View view) {
@@ -103,5 +88,10 @@ public class MainActivity extends AppCompatActivity {
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+    }
+
+    public void openList(View view) {
+        Intent intent = new Intent(this, ListActivity.class);
+        startActivity(intent);
     }
 }

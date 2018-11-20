@@ -37,6 +37,9 @@ public final class Util {
 
     @SuppressLint("DefaultLocale")
     public static String formatTime(int millis) {
+        if (millis < 0)
+            return "∞";
+
         int hour, min;
         hour = min = 0;
         millis /= 1000;

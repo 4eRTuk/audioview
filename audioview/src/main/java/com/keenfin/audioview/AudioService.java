@@ -33,16 +33,19 @@ public class AudioService extends Service {
     public static final int AUDIO_COMPLETED = 5;
     public static final int AUDIO_TRACK_CHANGED = 6;
 
-    protected MediaPlayer mMediaPlayer;
-    protected Thread mUiThread;
-    protected ArrayList<Object> mTracks;
+    private Thread mUiThread;
+    private long mProgressDelay = 1000;
 
-    protected boolean mLoop = false;
-    protected boolean mIsPrepared = false;
+    private MediaPlayer mMediaPlayer;
+    private boolean mIsPrepared = false;
+    private int mAttachedTag = Integer.MIN_VALUE;
 
-    protected Object mCurrentSource;
-    protected int mCurrentTrack = 0;
-    protected long mProgressDelay = 1000;
+    private ArrayList<Object> mTracks;
+    private Object mCurrentSource;
+    private int mCurrentTrack = 0;
+    private boolean mWasPlaying;
+
+    private boolean mLoop = false;
 
     private AudioServiceBinder mBinder = new AudioServiceBinder();
 
@@ -65,6 +68,19 @@ public class AudioService extends Service {
     }
 
     @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        release();
+    }
+
+    @Override
+    public void onDestroy() {
+        release();
+        stopSelf();
+        super.onDestroy();
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = "";
         if (intent != null && intent.getAction() != null)
@@ -74,6 +90,7 @@ public class AudioService extends Service {
             case ACTION_START_AUDIO:
                 break;
             case ACTION_STOP_AUDIO:
+                release();
                 stopSelf();
                 break;
             default:
@@ -89,13 +106,15 @@ public class AudioService extends Service {
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
+                if (!mIsPrepared)
+                    return;
                 if (isCorrectTrack(mCurrentTrack + 1)) {
                     mCurrentTrack++;
                     selectTrack(true);
                 } else {
                     if (!mLoop) {
-                        stop();
                         broadcast(AUDIO_COMPLETED);
+                        setDataSource(mCurrentSource);
                         return;
                     }
 
@@ -125,14 +144,14 @@ public class AudioService extends Service {
                         mProgressDelay = 1000;
                 }
 
+                if (mWasPlaying) {
+                    mMediaPlayer.start();
+                    mWasPlaying = false;
+                }
+
                 broadcast(AUDIO_PREPARED);
             }
         });
-    }
-
-    private void selectTrack() {
-        boolean wasPlaying = mMediaPlayer.isPlaying();
-        selectTrack(wasPlaying);
     }
 
     private void startUpdateThread() {
@@ -146,7 +165,7 @@ public class AudioService extends Service {
                             Thread.sleep(mProgressDelay);
                         } catch (InterruptedException ignored) {
                         }
-                        if (mMediaPlayer.isPlaying())
+                        if (mIsPrepared && mMediaPlayer.isPlaying())
                             broadcast(AUDIO_PROGRESS_UPDATED);
                     }
                 }
@@ -156,14 +175,30 @@ public class AudioService extends Service {
         mUiThread.start();
     }
 
+    public int getAttachedTag() {
+        return mAttachedTag;
+    }
+
+    public void attachTag(int tag) {
+//        Log.d("AudioView", "attaching " + tag);
+        stop();
+        mAttachedTag = tag;
+    }
+
     private void broadcast(int type) {
+//        Log.d("AudioView", "broadcast: " + type + " tag: " + mAttachedTag);
         Intent broadcast = new Intent(ACTION_STATUS_AUDIO);
         broadcast.putExtra("status", type);
+        broadcast.putExtra("tag", mAttachedTag);
         sendBroadcast(broadcast);
     }
 
     public boolean isPrepared() {
         return mIsPrepared;
+    }
+
+    public boolean isPlaying() {
+        return mMediaPlayer.isPlaying();
     }
 
     public int getCurrentPosition() {
@@ -204,10 +239,16 @@ public class AudioService extends Service {
         return mTracks.size() > 0 && trackPosition >= 0 && trackPosition < mTracks.size();
     }
 
+    private void selectTrack() {
+        boolean wasPlaying = mMediaPlayer.isPlaying();
+        selectTrack(wasPlaying);
+    }
+
     private void selectTrack(boolean wasPlaying) {
         if (mTracks.size() < 1)
             return;
 
+        mWasPlaying = wasPlaying;
         Object track = mTracks.get(mCurrentTrack);
 
         try {
@@ -218,14 +259,26 @@ public class AudioService extends Service {
             } else if (track.getClass() == FileDescriptor.class) {
                 setDataSource((FileDescriptor) track);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ignored) {
         }
 
-        if (wasPlaying)
-            mMediaPlayer.start();
-
         broadcast(AUDIO_TRACK_CHANGED);
+    }
+
+    public void setDataSource(Object dataSource) {
+        try {
+            if (dataSource.getClass() == String.class) {
+                setDataSource((String) dataSource);
+            } else if (dataSource.getClass() == Uri.class) {
+                setDataSource((Uri) dataSource);
+            } else if (dataSource.getClass() == FileDescriptor.class) {
+                setDataSource((FileDescriptor) dataSource);
+            } else if (dataSource.getClass() == List.class) {
+                setDataSource((List) dataSource);
+            }
+        } catch (IOException ignored) {
+            throw new IllegalArgumentException("AudioView supports only String, Uri, FileDescriptor data sources now.");
+        }
     }
 
     public void setDataSource(List tracks) throws RuntimeException {
@@ -261,6 +314,17 @@ public class AudioService extends Service {
         prepare(fd);
     }
 
+    private void release() {
+        mAttachedTag = Integer.MIN_VALUE;
+        try {
+            if (mIsPrepared)
+                mMediaPlayer.stop();
+            mMediaPlayer.release();
+        } catch (Exception ignored) {
+        }
+        mIsPrepared = false;
+    }
+
     public void reset() {
         mIsPrepared = false;
         mMediaPlayer.reset();
@@ -268,8 +332,8 @@ public class AudioService extends Service {
             mUiThread.interrupt();
     }
 
-    private void prepare(Object source) throws IOException {
-        mMediaPlayer.prepare();
+    private void prepare(Object source) {
+        mMediaPlayer.prepareAsync();
         mCurrentSource = source;
     }
 
@@ -291,7 +355,7 @@ public class AudioService extends Service {
     }
 
     public void stop() {
-        if (mIsPrepared && mMediaPlayer.isPlaying())
+        if (mIsPrepared)
             mMediaPlayer.stop();
 
         if (mUiThread != null)

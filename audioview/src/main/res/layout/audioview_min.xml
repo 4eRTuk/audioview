@@ -1,25 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~           Copyright © 2018 Stanislav Petriakov
   ~  Distributed under the Boost Software License, Version 1.0.
   ~     (See accompanying file LICENSE_1_0.txt or copy at
   ~           http://www.boost.org/LICENSE_1_0.txt)
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:gravity="center_vertical"
-              android:orientation="horizontal">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/play"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_play_arrow_white_24dp"
-        app:useCompatPadding="true"/>
+        app:useCompatPadding="true" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -37,11 +37,11 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:marqueeRepeatLimit="marquee_forever"
-            android:paddingEnd="12dp"
             android:paddingStart="12dp"
+            android:paddingEnd="12dp"
             android:scrollHorizontally="true"
             android:singleLine="true"
-            tools:text="Song title"/>
+            tools:text="Song title" />
 
         <SeekBar
             android:id="@+id/progress"
@@ -49,13 +49,24 @@
             android:layout_height="wrap_content"
             android:paddingTop="8dp"
             tools:max="5"
-            tools:progress="2"/>
+            tools:progress="2" />
+
+        <ProgressBar
+            android:id="@+id/indeterminate"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingEnd="12dp"
-            android:paddingStart="12dp">
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
 
             <TextView
                 android:id="@+id/time"
@@ -63,21 +74,21 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
                 android:layout_weight="1"
-                tools:text="1:16"/>
+                tools:text="1:16" />
 
             <TextView
                 android:id="@+id/total_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                tools:text="1:16"/>
+                tools:text="1:16" />
         </LinearLayout>
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingEnd="16dp"
             android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:visibility="gone">
 
             <ImageButton
@@ -88,7 +99,7 @@
                 android:background="@null"
                 android:scaleType="center"
                 android:src="@drawable/ic_fast_rewind_black_24dp"
-                tools:ignore="ContentDescription"/>
+                tools:ignore="ContentDescription" />
 
             <ImageButton
                 android:id="@+id/forward"
@@ -98,7 +109,7 @@
                 android:background="@null"
                 android:scaleType="center"
                 android:src="@drawable/ic_fast_forward_black_24dp"
-                tools:ignore="ContentDescription"/>
+                tools:ignore="ContentDescription" />
         </FrameLayout>
     </LinearLayout>
 </LinearLayout>

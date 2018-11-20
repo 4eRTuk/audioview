@@ -12,19 +12,18 @@ import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.FloatRange;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.text.method.ScrollingMovementMethod;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
-import android.widget.SeekBar;
-import android.widget.TextView;
+import android.widget.*;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -37,6 +36,7 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
     protected ImageButton mRewind, mForward;
     protected TextView mTitle, mTime, mTotalTime;
     protected SeekBar mProgress;
+    protected ProgressBar mIndeterminate;
 
     protected boolean mShowTitle = true;
     protected boolean mSelectControls = true;
@@ -87,6 +87,7 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
             mForward.setVisibility(GONE);
         }
         mProgress = findViewById(R.id.progress);
+        mIndeterminate = findViewById(R.id.indeterminate);
         mTitle = findViewById(R.id.title);
         mTitle.setSelected(true);
         mTitle.setMovementMethod(new ScrollingMovementMethod());
@@ -100,23 +101,42 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
 
         if (mPrimaryColor != 0) {
             mProgress.getProgressDrawable().setColorFilter(mPrimaryColor, PorterDuff.Mode.MULTIPLY);
-            mProgress.getIndeterminateDrawable().setColorFilter(mPrimaryColor, PorterDuff.Mode.MULTIPLY);
+            mIndeterminate.getIndeterminateDrawable().setColorFilter(mPrimaryColor, PorterDuff.Mode.SRC_ATOP);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 mProgress.getThumb().setColorFilter(mPrimaryColor, PorterDuff.Mode.SRC_ATOP);
+            } else {
+                Drawable thumb = ContextCompat.getDrawable(getContext(), R.drawable.thumb);
+                if (thumb != null) {
+                    thumb.setColorFilter(mPrimaryColor, PorterDuff.Mode.SRC_ATOP);
+                    mProgress.setThumb(thumb);
+                }
             }
             mPlay.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
             mPlay.setRippleColor(darkenColor(mPrimaryColor, 0.87f));
         }
     }
 
+    public void setUpControls() {
+        mProgress.setProgress(0);
+        mProgress.setVisibility(VISIBLE);
+        mIndeterminate.setVisibility(GONE);
+        setPlayIcon();
+        mTime.setText("");
+        if (mTotalTime != null)
+            mTotalTime.setText("");
+        mTitle.setText("");
+    }
+
     protected void setDuration(int duration) {
         String totalTime = formatDuration(duration);
         if (duration > 0) {
+            mProgress.setVisibility(VISIBLE);
+            mIndeterminate.setVisibility(GONE);
             mProgress.setProgress(0);
             mProgress.setMax(duration);
         } else {
-            mProgress.setIndeterminate(true);
-            mProgress.setThumb(null);
+            mProgress.setVisibility(GONE);
+            mIndeterminate.setVisibility(VISIBLE);
         }
 
         if (mTotalTime != null)

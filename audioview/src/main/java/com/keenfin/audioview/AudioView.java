@@ -69,11 +69,6 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
                     return;
                 if (fromUser)
                     mMediaPlayer.seekTo(progress);
-
-                if (mTotalTime != null)
-                    mTime.setText(formatTime(mMediaPlayer.getCurrentPosition()));
-                else
-                    mTime.setText(getTrackTime());
             }
 
             @Override
@@ -95,8 +90,14 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
         final Runnable seekBarUpdateTask = new Runnable() {
             @Override
             public void run() {
-                if (mIsPrepared && mProgress.getProgress() < mMediaPlayer.getCurrentPosition())
-                    mProgress.setProgress(mMediaPlayer.getCurrentPosition());
+                int current = mMediaPlayer.getCurrentPosition();
+                if (mIsPrepared && mProgress.getProgress() < current) {
+                    mProgress.setProgress(current);
+                    if (mTotalTime != null)
+                        mTime.setText(formatTime(mMediaPlayer.getCurrentPosition()));
+                    else
+                        mTime.setText(getTrackTime());
+                }
 
                 mHandler.postDelayed(this, mProgressDelay);
             }

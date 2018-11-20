@@ -1,17 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~           Copyright © 2015-2016 Stanislav Petriakov
   ~  Distributed under the Boost Software License, Version 1.0.
   ~     (See accompanying file LICENSE_1_0.txt or copy at
   ~           http://www.boost.org/LICENSE_1_0.txt)
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/title"
@@ -22,23 +22,34 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:marqueeRepeatLimit="marquee_forever"
-        android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:paddingTop="8dp"
+        android:paddingEnd="16dp"
         android:scrollHorizontally="true"
-        android:singleLine="true"/>
+        android:singleLine="true" />
 
     <SeekBar
         android:id="@+id/progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"/>
+        android:paddingTop="8dp" />
+
+    <ProgressBar
+        android:id="@+id/indeterminate"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:visibility="gone" />
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -55,16 +66,16 @@
                 android:background="@null"
                 android:scaleType="center"
                 android:src="@drawable/ic_fast_rewind_black_24dp"
-                tools:ignore="ContentDescription"/>
+                tools:ignore="ContentDescription" />
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/play"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:src="@drawable/ic_play_arrow_white_24dp"
-                app:useCompatPadding="true"/>
+                app:useCompatPadding="true" />
 
             <ImageButton
                 android:id="@+id/forward"
@@ -74,7 +85,7 @@
                 android:background="@null"
                 android:scaleType="center"
                 android:src="@drawable/ic_fast_forward_black_24dp"
-                tools:ignore="ContentDescription"/>
+                tools:ignore="ContentDescription" />
 
         </LinearLayout>
 
@@ -82,6 +93,6 @@
             android:id="@+id/time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end|top"/>
+            android:layout_gravity="end|top" />
     </FrameLayout>
 </LinearLayout>

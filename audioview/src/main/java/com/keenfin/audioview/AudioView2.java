@@ -20,13 +20,14 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.keenfin.audioview.AudioService.*;
-import static com.keenfin.audioview.Util.formatDuration;
-import static com.keenfin.audioview.Util.formatTime;
 
 public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     private boolean mFrozen = false;
     private int mSeekTo = -1;
+    private int mTag;
+    protected Object mDataSource;
     private AudioService.AudioServiceBinder mServiceBinder = null;
+    private View mClickedView;
 
     private AudioService getService() {
         return mServiceBinder != null ? mServiceBinder.getService() : null;
@@ -47,10 +48,18 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     private BroadcastReceiver mAudioReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (getService() == null)
-                return;
-            
             int status = intent.getIntExtra("status", -1);
+//            Log.d("AudioView", "got: " + status + " tag: " + mTag);
+            switch (status) {
+                case AUDIO_STOPPED:
+                case AUDIO_PAUSED:
+                    setPlayIcon();
+                    break;
+            }
+
+            if (getService() == null || !attached())
+                return;
+
             switch (status) {
                 case AUDIO_PREPARED:
                     if (mShowTitle) {
@@ -64,23 +73,36 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
 
                     if (mAudioViewListener != null)
                         mAudioViewListener.onPrepared();
+
+                    if (mClickedView != null) {
+                        onClick(mClickedView);
+                        mClickedView = null;
+                    }
                     break;
                 case AUDIO_STARTED:
                     setPauseIcon();
                     break;
                 case AUDIO_STOPPED:
                     setDuration(getService().getTotalDuration());
-                case AUDIO_PAUSED:
-                    setPlayIcon();
                     break;
                 case AUDIO_PROGRESS_UPDATED:
                     if (!mFrozen) {
                         int current = getService().getCurrentPosition();
-                        if (mProgress.getProgress() < current)
-                            mProgress.setProgress(current);
+                        if (getService().getTotalDuration() < 0) {
+                            if (mIndeterminate.getVisibility() == GONE) {
+                                setDuration(-1);
+                                setPauseIcon();
+                            }
+                            mTime.setText(getService().formatTime(mTotalTime == null));
+                        } else {
+                            if (mProgress.getProgress() < current)
+                                mProgress.setProgress(current);
+                        }
                     }
                     break;
                 case AUDIO_COMPLETED:
+                    setDuration(getService().getTotalDuration());
+                    setPlayIcon();
                     if (mAudioViewListener != null)
                         mAudioViewListener.onCompletion();
                     break;
@@ -111,7 +133,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
         mProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (getService() == null)
+                if (getService() == null || !attached())
                     return;
 
                 if (fromUser)
@@ -127,7 +149,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if (getService() != null && getService().isPrepared()) {
+                if (getService() != null && getService().isPrepared() && attached()) {
                     getService().seekTo(mSeekTo);
                     mTime.setText(getService().formatTime(mTotalTime == null));
                 }
@@ -144,9 +166,12 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
         }
     }
 
-    private void unBindAudioService() {
+    private void unbindAudioService() {
         if (getService() != null) {
-            getContext().unbindService(mServiceConnection);
+            try {
+                getContext().unbindService(mServiceConnection);
+            } catch (Exception ignored) {
+            }
         }
     }
 
@@ -161,7 +186,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        unBindAudioService();
+        unbindAudioService();
         try {
             getContext().unregisterReceiver(mAudioReceiver);
         } catch (Exception ignored) {
@@ -169,10 +194,17 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(View view) {
         if (getService() == null)
             return;
-        int id = v.getId();
+        if (!attached()) {
+            getService().attachTag(mTag);
+            setLoop(mLoop);
+            setDataSource(mDataSource);
+            mClickedView = view;
+            return;
+        }
+        int id = view.getId();
         if (id == R.id.play) {
             getService().controlAudio();
         } else if (id == R.id.rewind) {
@@ -182,58 +214,86 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
         }
     }
 
+    private void setDataSource(Object dataSource) {
+        try {
+            if (dataSource.getClass() == String.class) {
+                setDataSource((String) dataSource);
+            } else if (dataSource.getClass() == Uri.class) {
+                setDataSource((Uri) dataSource);
+            } else if (dataSource.getClass() == FileDescriptor.class) {
+                setDataSource((FileDescriptor) dataSource);
+            } else if (dataSource.getClass() == List.class) {
+                setDataSource((List) dataSource);
+            }
+        } catch (IOException ignored) {
+        }
+    }
+
     @Override
     public void setLoop(boolean loop) {
         super.setLoop(loop);
-        if (getService() == null)
+        if (getService() == null || !attached())
             return;
         getService().setLoop(loop);
     }
 
     @Override
     public void setDataSource(List tracks) throws RuntimeException {
-        if (getService() == null)
+        mDataSource = tracks;
+        if (getService() == null || !attached())
             return;
         getService().setDataSource(tracks);
     }
 
     @Override
     public void setDataSource(String path) throws IOException {
-        if (getService() == null)
+        mDataSource = path;
+        if (getService() == null || !attached())
+            return;
+        if (getService().isPlaying())
             return;
         getService().setDataSource(path);
     }
 
     @Override
     public void setDataSource(Uri uri) throws IOException {
-        if (getService() == null)
+        mDataSource = uri;
+        if (getService() == null || !attached())
             return;
         getService().setDataSource(uri);
     }
 
     @Override
     public void setDataSource(FileDescriptor fd) throws IOException {
-        if (getService() == null)
+        mDataSource = fd;
+        if (getService() == null || !attached())
             return;
         getService().setDataSource(fd);
     }
 
     @Override
     public void start() {
-        if (getService() != null)
+        if (getService() != null && attached())
             getService().start();
     }
 
     @Override
     public void pause() {
-        if (getService() != null)
+        if (getService() != null && attached())
             getService().pause();
     }
 
     @Override
     public void stop() {
-        if (getService() != null)
+        if (getService() != null && attached())
             getService().stop();
     }
 
+    public void setTag(int tag) {
+        mTag = tag;
+    }
+
+    public boolean attached() {
+        return getService() != null && getService().getAttachedTag() == mTag;
+    }
 }
