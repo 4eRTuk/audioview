@@ -154,7 +154,7 @@ private void unregisterAudioReceiver() {
 ```
 
 
-## Styles
+## Styles & options
 #### primaryColor
 Set default color for FAB and SeekBar. By default it uses colorAccent from AppTheme.
 
@@ -176,3 +176,6 @@ Show song's title if there is one. Default is true.
     app:selectControls="false"
     app:showTitle="false"/>
 ```
+
+#### setLoop(boolean)
+Loop playlist (or single file).
