@@ -11,6 +11,7 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -103,7 +104,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
             }
         };
 
-        mHandler = new Handler(new Handler.Callback() {
+        mHandler = new Handler(getContext().getMainLooper(), new Handler.Callback() {
             Thread mUiThread;
 
             @Override
@@ -131,7 +132,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
             public void onCompletion(MediaPlayer mp) {
                 if (isCorrectTrack(mCurrentTrack + 1)) {
                     mCurrentTrack++;
-                    selectTrack();
+                    selectTrack(true);
                 } else {
                     if (!mLoop) {
                         pause();
@@ -143,7 +144,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
 
                     if (isCorrectTrack(0)) {
                         mCurrentTrack = 0;
-                        selectTrack();
+                        selectTrack(true);
                     } else {
                         pause();
                         start();
@@ -179,8 +180,11 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
                 if (mAudioViewListener != null)
                     mAudioViewListener.onPrepared();
 
-                if (mWasPlaying)
+                if (mWasPlaying) {
                     mMediaPlayer.start();
+                    setPauseIcon();
+                } else
+                    setPlayIcon();
             }
         });
 
@@ -188,7 +192,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
         if (fix)
             mTracks.add(mCurrentSource);
         if (mTracks.size() > 0)
-            selectTrack();
+            selectTrack(false);
         if (fix)
             mTracks.remove(0);
     }
@@ -227,7 +231,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
         else
             return;
 
-        selectTrack();
+        selectTrack(false);
     }
 
     protected void nextTrack() {
@@ -236,7 +240,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
         else
             return;
 
-        selectTrack();
+        selectTrack(false);
     }
 
     protected boolean isCorrectTrack(int trackPosition) {
@@ -251,12 +255,12 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
         }
     }
 
-    protected void selectTrack() {
+    protected void selectTrack(boolean play) {
         if (mTracks.size() < 1)
             return;
 
         Object track = mTracks.get(mCurrentTrack);
-        mWasPlaying = mMediaPlayer.isPlaying();
+        mWasPlaying = mMediaPlayer.isPlaying() || play;
 
         try {
             if (track.getClass() == String.class) {
@@ -282,7 +286,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
             //noinspection unchecked
             mTracks = new ArrayList(tracks);
             mCurrentTrack = 0;
-            selectTrack();
+            selectTrack(false);
         }
     }
 
