@@ -155,18 +155,17 @@ public class AudioService extends Service {
     }
 
     private void startUpdateThread() {
-        if (mUiThread == null || mUiThread.isInterrupted()) {
+        if (mUiThread == null || mUiThread.isInterrupted() || mUiThread.isAlive()) {
             mUiThread = new Thread() {
-                @SuppressWarnings("InfiniteLoopStatement")
                 @Override
                 public void run() {
                     while (!isInterrupted()) {
                         try {
                             Thread.sleep(mProgressDelay);
+                            if (mIsPrepared && mMediaPlayer.isPlaying())
+                                broadcast(AUDIO_PROGRESS_UPDATED);
                         } catch (InterruptedException ignored) {
                         }
-                        if (mIsPrepared && mMediaPlayer.isPlaying())
-                            broadcast(AUDIO_PROGRESS_UPDATED);
                     }
                 }
             };
@@ -327,7 +326,10 @@ public class AudioService extends Service {
 
     public void reset() {
         mIsPrepared = false;
-        mMediaPlayer.reset();
+        try {
+            mMediaPlayer.reset();
+        } catch (Exception ignored) {
+        }
         if (mUiThread != null)
             mUiThread.interrupt();
     }
