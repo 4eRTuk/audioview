@@ -1,5 +1,5 @@
 /*
- *           Copyright © 2018 Stanislav Petriakov
+ *           Copyright © 2018-2019 Stanislav Petriakov
  *  Distributed under the Boost Software License, Version 1.0.
  *     (See accompanying file LICENSE_1_0.txt or copy at
  *           http://www.boost.org/LICENSE_1_0.txt)
@@ -155,7 +155,7 @@ public class AudioService extends Service {
     }
 
     private void startUpdateThread() {
-        if (mUiThread == null || mUiThread.isInterrupted() || mUiThread.isAlive()) {
+        if (mUiThread == null || mUiThread.isInterrupted() || mUiThread.isAlive() || mUiThread.getState() != Thread.State.NEW) {
             mUiThread = new Thread() {
                 @Override
                 public void run() {
@@ -164,14 +164,17 @@ public class AudioService extends Service {
                             Thread.sleep(mProgressDelay);
                             if (mIsPrepared && mMediaPlayer.isPlaying())
                                 broadcast(AUDIO_PROGRESS_UPDATED);
-                        } catch (InterruptedException ignored) {
+                        } catch (InterruptedException | IllegalStateException ignored) {
                         }
                     }
                 }
             };
         }
 
-        mUiThread.start();
+        try {
+            mUiThread.start();
+        } catch (IllegalThreadStateException ignored) {
+        }
     }
 
     public int getAttachedTag() {
@@ -197,15 +200,27 @@ public class AudioService extends Service {
     }
 
     public boolean isPlaying() {
-        return mMediaPlayer.isPlaying();
+        try {
+            return mMediaPlayer.isPlaying();
+        } catch (IllegalStateException ignored) {
+            return false;
+        }
     }
 
     public int getCurrentPosition() {
-        return mMediaPlayer.getCurrentPosition();
+        try {
+            return mMediaPlayer.getCurrentPosition();
+        } catch (IllegalStateException ignored) {
+            return 0;
+        }
     }
 
     public int getTotalDuration() {
-        return mMediaPlayer.getDuration();
+        try {
+            return mMediaPlayer.getDuration();
+        } catch (IllegalStateException ignored) {
+            return 0;
+        }
     }
 
     public void controlAudio() {
