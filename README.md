@@ -165,7 +165,9 @@ Use alternative version of layout if true.
 Specify custom player layout reference. Should contain
 - TextViews R.id.time, R.id.title;
 - ImageButtons R.id.rewind, R.id.forward, R.id.play;
-- SeekBar R.id.progress.
+- SeekBar R.id.progress;
+- ProgressBar R.id.indeterminate.
+
 Mutually exclusive with minified and primaryColor.
 ```
 ...
