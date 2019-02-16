@@ -43,6 +43,8 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
     protected boolean mLoop = false;
     protected int mPrimaryColor = 0;
     protected int mCustomLayoutRes = 0;
+    protected int mCustomPlayIconRes = 0;
+    protected int mCustomPauseIconRes = 0;
 
     public AudioViewListener mAudioViewListener;
 
@@ -70,12 +72,17 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
             mShowTitle = styleable.getBoolean(R.styleable.BaseAudioView_showTitle, true);
             mSelectControls = styleable.getBoolean(R.styleable.BaseAudioView_selectControls, true);
             mMinified = styleable.getBoolean(R.styleable.BaseAudioView_minified, false);
-            mCustomLayoutRes = styleable.getResourceId(R.styleable.AudioView_customLayout, 0);
+            mCustomLayoutRes = styleable.getResourceId(R.styleable.BaseAudioView_customLayout, 0);
+            mCustomPlayIconRes = styleable.getResourceId(R.styleable.BaseAudioView_customPlayIcon,
+                    R.drawable.ic_play_arrow_white_24dp);
+            mCustomPauseIconRes = styleable.getResourceId(R.styleable.BaseAudioView_customPauseIcon,
+                    R.drawable.ic_pause_white_24dp);
+
             if (styleable.hasValue(R.styleable.BaseAudioView_primaryColor))
                 mPrimaryColor = styleable.getColor(R.styleable.BaseAudioView_primaryColor, 0xFF000000);
 
-            if ((styleable.hasValue(R.styleable.AudioView_minified)
-                    || styleable.hasValue(R.styleable.AudioView_primaryColor))
+            if ((styleable.hasValue(R.styleable.BaseAudioView_minified)
+                    || styleable.hasValue(R.styleable.BaseAudioView_primaryColor))
                     && mCustomLayoutRes != 0) {
                 throw new RuntimeException("Minified and primaryColor attr should not be specified " +
                         "while using custom layout.");
@@ -199,10 +206,10 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
     }
 
     protected void setPauseIcon() {
-        mPlay.setImageResource(R.drawable.ic_pause_white_24dp);
+        mPlay.setImageResource(mCustomPauseIconRes);
     }
 
     protected void setPlayIcon() {
-        mPlay.setImageResource(R.drawable.ic_play_arrow_white_24dp);
+        mPlay.setImageResource(mCustomPlayIconRes);
     }
 }

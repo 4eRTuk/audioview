@@ -173,6 +173,12 @@ app:customLayout="@layout/my_custom_layout"
 ...
 ```
 
+#### customPlayIcon
+Set resource of play icon.
+
+#### customPauseIcon
+Set resource of pause icon.
+
 #### selectControls
 Show (true by default) or hide rewind/forward buttons. Not available if minified.
 
@@ -186,7 +192,9 @@ Show song's title if there is one. Default is true.
     app:minified="true"
     app:primaryColor="@android:color/holo_blue_ligh"
     app:selectControls="false"
-    app:showTitle="false"/>
+    app:showTitle="false"
+    app:customPlayIcon="@drawable/my_play_icon"
+    app:customPauseIcon="@drawable/my_pause_icon"/>
 ```
 
 #### setLoop(boolean)
