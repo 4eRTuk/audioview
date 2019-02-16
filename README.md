@@ -161,6 +161,18 @@ Set default color for FAB and SeekBar. By default it uses colorAccent from AppTh
 #### minified
 Use alternative version of layout if true.
 
+#### customLayout
+Specify custom player layout reference. Should contain
+- TextViews R.id.time, R.id.title;
+- ImageButtons R.id.rewind, R.id.forward, R.id.play;
+- SeekBar R.id.progress.
+Mutually exclusive with minified and primaryColor.
+```
+...
+app:customLayout="@layout/my_custom_layout"
+...
+```
+
 #### selectControls
 Show (true by default) or hide rewind/forward buttons. Not available if minified.
 
