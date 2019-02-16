@@ -5,13 +5,12 @@
   ~           http://www.boost.org/LICENSE_1_0.txt)
   -->
 
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -21,54 +20,81 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="@color/grey"
-        android:orientation="vertical"
-        android:paddingTop="8dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/from_file" />
-
-        <com.keenfin.audioview.AudioView
-            android:id="@+id/audioview"
+        android:orientation="vertical">
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@color/grey"
+            android:orientation="vertical"
+            android:paddingTop="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/from_file" />
+
+            <com.keenfin.audioview.AudioView
+                android:id="@+id/audioview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="selectTrack"
+                android:text="@string/select_track" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@color/grey"
+            android:orientation="vertical"
+            android:paddingTop="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/from_internet" />
+
+            <com.keenfin.audioview.AudioView
+                android:id="@+id/live"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:minified="true"
+                app:primaryColor="@android:color/holo_blue_light"
+                app:selectControls="false"
+                app:showTitle="false" />
+        </LinearLayout>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="selectTrack"
-            android:text="@string/select_track" />
-    </LinearLayout>
+            android:onClick="openList"
+            android:text="@string/list_audios" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="@color/grey"
-        android:orientation="vertical"
-        android:paddingTop="8dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/from_internet" />
-
-        <com.keenfin.audioview.AudioView
-            android:id="@+id/live"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:minified="true"
-            app:primaryColor="@android:color/holo_blue_light"
-            app:selectControls="false"
-            app:showTitle="false" />
-    </LinearLayout>
+            android:layout_marginBottom="8dp"
+            android:background="@color/grey"
+            android:orientation="vertical"
+            android:paddingTop="8dp">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="openList"
-        android:text="@string/list_audios" />
-</LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/custom_layout" />
+
+            <com.keenfin.audioview.AudioView
+                android:id="@+id/custom_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:customLayout="@layout/my_custom_layout"
+                app:selectControls="false"
+                app:showTitle="false" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
