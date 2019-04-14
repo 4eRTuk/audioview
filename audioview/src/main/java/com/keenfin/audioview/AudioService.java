@@ -145,7 +145,7 @@ public class AudioService extends Service {
                 }
 
                 if (mWasPlaying) {
-                    mMediaPlayer.start();
+                    mp.start();
                     mWasPlaying = false;
                 }
 
@@ -162,7 +162,7 @@ public class AudioService extends Service {
                     while (!isInterrupted()) {
                         try {
                             Thread.sleep(mProgressDelay);
-                            if (mIsPrepared && mMediaPlayer.isPlaying())
+                            if (mIsPrepared && isPlaying())
                                 broadcast(AUDIO_PROGRESS_UPDATED);
                         } catch (InterruptedException | IllegalStateException ignored) {
                         }
@@ -224,7 +224,7 @@ public class AudioService extends Service {
     }
 
     public void controlAudio() {
-        if (mIsPrepared && mMediaPlayer.isPlaying()) {
+        if (mIsPrepared && isPlaying()) {
             pause();
         } else {
             start();
@@ -254,7 +254,7 @@ public class AudioService extends Service {
     }
 
     private void selectTrack() {
-        boolean wasPlaying = mMediaPlayer.isPlaying();
+        boolean wasPlaying = isPlaying();
         selectTrack(wasPlaying);
     }
 
@@ -312,20 +312,29 @@ public class AudioService extends Service {
 
     public void setDataSource(String path) throws IOException {
         reset();
-        mMediaPlayer.setDataSource(path);
-        prepare(path);
+        try {
+            mMediaPlayer.setDataSource(path);
+            prepare(path);
+        } catch (IllegalStateException ignored) {
+        }
     }
 
     public void setDataSource(Uri uri) throws IOException {
         reset();
-        mMediaPlayer.setDataSource(this, uri);
-        prepare(uri);
+        try {
+            mMediaPlayer.setDataSource(this, uri);
+            prepare(uri);
+        } catch (IllegalStateException ignored) {
+        }
     }
 
     public void setDataSource(FileDescriptor fd) throws IOException {
         reset();
-        mMediaPlayer.setDataSource(fd);
-        prepare(fd);
+        try {
+            mMediaPlayer.setDataSource(fd);
+            prepare(fd);
+        } catch (IllegalStateException ignored) {
+        }
     }
 
     private void release() {
@@ -350,21 +359,30 @@ public class AudioService extends Service {
     }
 
     private void prepare(Object source) {
-        mMediaPlayer.prepareAsync();
-        mCurrentSource = source;
+        try {
+            mMediaPlayer.prepareAsync();
+            mCurrentSource = source;
+        } catch (IllegalStateException ignored) {
+        }
     }
 
     public void start() {
         if (mIsPrepared) {
-            mMediaPlayer.start();
-            broadcast(AUDIO_STARTED);
-            startUpdateThread();
+            try {
+                mMediaPlayer.start();
+                broadcast(AUDIO_STARTED);
+                startUpdateThread();
+            } catch (IllegalStateException ignored) {
+            }
         }
     }
 
     public void pause() {
-        if (mIsPrepared && mMediaPlayer.isPlaying())
-            mMediaPlayer.pause();
+        try {
+            if (mIsPrepared && mMediaPlayer.isPlaying())
+                mMediaPlayer.pause();
+        } catch (IllegalStateException ignored) {
+        }
 
         if (mUiThread != null)
             mUiThread.interrupt();
@@ -372,8 +390,11 @@ public class AudioService extends Service {
     }
 
     public void stop() {
-        if (mIsPrepared)
-            mMediaPlayer.stop();
+        try {
+            if (mIsPrepared)
+                mMediaPlayer.stop();
+        } catch (IllegalStateException ignored) {
+        }
 
         if (mUiThread != null)
             mUiThread.interrupt();
@@ -381,7 +402,10 @@ public class AudioService extends Service {
     }
 
     public void seekTo(Integer progress) {
-        mMediaPlayer.seekTo(progress);
+        try {
+            mMediaPlayer.seekTo(progress);
+        } catch (IllegalStateException ignored) {
+        }
     }
 
     public void setLoop(boolean loop) {
@@ -393,9 +417,9 @@ public class AudioService extends Service {
     }
 
     public String formatTime(boolean full) {
-        int current = mMediaPlayer.getCurrentPosition();
+        int current = getCurrentPosition();
         if (full)
-            return Util.formatTime(current) + " / " + Util.formatTime(mMediaPlayer.getDuration());
+            return Util.formatTime(current) + " / " + Util.formatTime(getTotalDuration());
         return Util.formatTime(current);
     }
 }

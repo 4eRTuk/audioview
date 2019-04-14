@@ -67,21 +67,31 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (!mIsPrepared)
                     return;
-                if (fromUser)
-                    mMediaPlayer.seekTo(progress);
+                if (fromUser) {
+                    try {
+                        mMediaPlayer.seekTo(progress);
+                    } catch (IllegalStateException ignored) {
+                    }
+                }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                seekBar.setTag(mMediaPlayer.isPlaying());
-                if (mMediaPlayer.isPlaying())
-                    mMediaPlayer.pause();
+                try {
+                    seekBar.setTag(isPlaying());
+                    if (isPlaying())
+                        mMediaPlayer.pause();
+                } catch (IllegalStateException ignored) {
+                }
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if ((boolean) seekBar.getTag())
-                    mMediaPlayer.start();
+                try {
+                    if ((boolean) seekBar.getTag())
+                        mMediaPlayer.start();
+                } catch (IllegalStateException ignored) {
+                }
             }
         });
     }
@@ -91,11 +101,11 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
             @Override
             public void run() {
                 if (mIsPrepared) {
-                    int current = mMediaPlayer.getCurrentPosition();
+                    int current = getCurrentPosition();
                     if (mProgress.getProgress() < current) {
                         mProgress.setProgress(current);
                         if (mTotalTime != null)
-                            mTime.setText(formatTime(mMediaPlayer.getCurrentPosition()));
+                            mTime.setText(formatTime(getCurrentPosition()));
                         else
                             mTime.setText(getTrackTime());
                     }
@@ -117,7 +127,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
                 } else if (msg.what == SEEKBAR_STATE.STICK.ordinal()) {
                     mUiThread = new Thread(seekBarUpdateTask);
                     mUiThread.start();
-                    mProgress.setProgress(mMediaPlayer.getCurrentPosition());
+                    mProgress.setProgress(getCurrentPosition());
                     return true;
                 }
                 return false;
@@ -137,7 +147,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
                 } else {
                     if (!mLoop) {
                         pause();
-                        mProgress.setProgress(mMediaPlayer.getDuration());
+                        mProgress.setProgress(getTotalDuration());
                         if (mAudioViewListener != null)
                             mAudioViewListener.onCompletion();
                         return;
@@ -182,7 +192,10 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
                     mAudioViewListener.onPrepared();
 
                 if (mWasPlaying) {
-                    mMediaPlayer.start();
+                    try {
+                        mMediaPlayer.start();
+                    } catch (IllegalStateException ignored) {
+                    }
                     setPauseIcon();
                 } else
                     setPlayIcon();
@@ -215,7 +228,11 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
     }
 
     public boolean isPlaying() {
-        return mMediaPlayer.isPlaying();
+        try {
+            return mMediaPlayer.isPlaying();
+        } catch (IllegalStateException ignored) {
+        }
+        return false;
     }
 
     @Override
@@ -253,7 +270,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
     }
 
     protected void controlAudio() {
-        if (mIsPrepared && mMediaPlayer.isPlaying()) {
+        if (mIsPrepared && isPlaying()) {
             pause();
         } else {
             start();
@@ -265,7 +282,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
             return;
 
         Object track = mTracks.get(mCurrentTrack);
-        mWasPlaying = mMediaPlayer.isPlaying() || play;
+        mWasPlaying = isPlaying() || play;
 
         try {
             if (track.getClass() == String.class) {
@@ -298,22 +315,31 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
     @Override
     public void setDataSource(String path) throws IOException {
         reset();
-        mMediaPlayer.setDataSource(path);
-        prepare(path);
+        try {
+            mMediaPlayer.setDataSource(path);
+            prepare(path);
+        } catch (IllegalStateException ignored) {
+        }
     }
 
     @Override
     public void setDataSource(Uri uri) throws IOException {
         reset();
-        mMediaPlayer.setDataSource(getContext(), uri);
-        prepare(uri);
+        try {
+            mMediaPlayer.setDataSource(getContext(), uri);
+            prepare(uri);
+        } catch (IllegalStateException ignored) {
+        }
     }
 
     @Override
     public void setDataSource(FileDescriptor fd) throws IOException {
         reset();
-        mMediaPlayer.setDataSource(fd);
-        prepare(fd);
+        try {
+            mMediaPlayer.setDataSource(fd);
+            prepare(fd);
+        } catch (IllegalStateException ignored) {
+        }
     }
 
     protected void reset() {
@@ -329,7 +355,11 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
     @Override
     public void start() {
         if (mIsPrepared) {
-            mMediaPlayer.start();
+            try {
+                mMediaPlayer.start();
+            } catch (IllegalStateException ignored) {
+            }
+
             setPauseIcon();
             mHandler.sendEmptyMessage(SEEKBAR_STATE.STICK.ordinal());
         }
@@ -337,8 +367,11 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
 
     @Override
     public void pause() {
-        if (mIsPrepared && mMediaPlayer.isPlaying())
-            mMediaPlayer.pause();
+        try {
+            if (mIsPrepared && mMediaPlayer.isPlaying())
+                mMediaPlayer.pause();
+        } catch (IllegalStateException ignored) {
+        }
 
         setPlayIcon();
         mHandler.sendEmptyMessage(SEEKBAR_STATE.UNSTICK.ordinal());
@@ -346,14 +379,33 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
 
     @Override
     public void stop() {
-        if (mIsPrepared && mMediaPlayer.isPlaying())
-            mMediaPlayer.stop();
+        try {
+            if (mIsPrepared && mMediaPlayer.isPlaying())
+                mMediaPlayer.stop();
+        } catch (IllegalStateException ignored) {
+        }
 
         setPlayIcon();
         mHandler.sendEmptyMessage(SEEKBAR_STATE.UNSTICK.ordinal());
     }
 
+    public int getCurrentPosition() {
+        try {
+            return mMediaPlayer.getCurrentPosition();
+        } catch (IllegalStateException ignored) {
+        }
+        return 0;
+    }
+
+    public int getTotalDuration() {
+        try {
+            return mMediaPlayer.getDuration();
+        } catch (IllegalStateException ignored) {
+        }
+        return 0;
+    }
+
     protected String getTrackTime() {
-        return formatTime(mMediaPlayer.getCurrentPosition()) + " / " + formatTime(mMediaPlayer.getDuration());
+        return formatTime(getCurrentPosition()) + " / " + formatTime(getTotalDuration());
     }
 }
