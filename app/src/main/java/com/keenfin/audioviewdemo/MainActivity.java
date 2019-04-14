@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         try {
             ((AudioView) findViewById(R.id.live)).setDataSource(URL);
+            ((AudioView) findViewById(R.id.custom_layout)).setDataSource(URL);
         } catch (IOException e) {
             e.printStackTrace();
         }

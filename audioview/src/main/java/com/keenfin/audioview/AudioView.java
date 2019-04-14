@@ -214,6 +214,10 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
         mIsPrepared = false;
     }
 
+    public boolean isPlaying() {
+        return mMediaPlayer.isPlaying();
+    }
+
     @Override
     public void onClick(View v) {
         int i = v.getId();

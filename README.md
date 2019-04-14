@@ -161,6 +161,26 @@ Set default color for FAB and SeekBar. By default it uses colorAccent from AppTh
 #### minified
 Use alternative version of layout if true.
 
+#### customLayout
+Specify custom player layout reference. Should contain
+- TextViews R.id.time, R.id.title;
+- ImageButtons R.id.rewind, R.id.forward, R.id.play;
+- SeekBar R.id.progress;
+- ProgressBar R.id.indeterminate.
+
+Mutually exclusive with minified and primaryColor.
+```
+...
+app:customLayout="@layout/my_custom_layout"
+...
+```
+
+#### customPlayIcon
+Set resource of play icon.
+
+#### customPauseIcon
+Set resource of pause icon.
+
 #### selectControls
 Show (true by default) or hide rewind/forward buttons. Not available if minified.
 
@@ -174,7 +194,9 @@ Show song's title if there is one. Default is true.
     app:minified="true"
     app:primaryColor="@android:color/holo_blue_ligh"
     app:selectControls="false"
-    app:showTitle="false"/>
+    app:showTitle="false"
+    app:customPlayIcon="@drawable/my_play_icon"
+    app:customPauseIcon="@drawable/my_pause_icon"/>
 ```
 
 #### setLoop(boolean)

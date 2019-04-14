@@ -12,5 +12,8 @@
         <attr name="selectControls" format="boolean"/>
         <attr name="primaryColor" format="color"/>
         <attr name="minified" format="boolean"/>
+        <attr name="customLayout" format="reference"/>
+        <attr name="customPlayIcon" format="reference"/>
+        <attr name="customPauseIcon" format="reference"/>
     </declare-styleable>
 </resources>
