@@ -2,27 +2,36 @@ language: android
 jdk: oraclejdk8
 env:
   global:
+    - ADB_INSTALL_TIMEOUT=8
+    - EMU_FLAVOR=default # use google_apis flavor if no default flavor emulator
+    - EMU_API=27
+    - EMU_ABI=x86_64
     - ANDROID_API_LEVEL=28
     - ANDROID_BUILD_TOOLS_VERSION=28.0.3
+    - ANDROID_HOME=/usr/local/android-sdk
+    - TOOLS=${ANDROID_HOME}/tools
+    - PATH=${ANDROID_HOME}:${ANDROID_HOME}/emulator:${TOOLS}:${TOOLS}/bin:${ANDROID_HOME}/platform-tools:${PATH}
+
 android:
   components:
     - tools
-    - platform-tools
-    - build-tools-$ANDROID_BUILD_TOOLS_VERSION
-    - android-$ANDROID_API_LEVEL
-    - android-27
-    - extra-google-google_play_services
-    - extra-google-m2repository
-    - extra-android-m2repository
-    - sys-img-x86-android-27
     
   licenses:
     - 'android-sdk-preview-license-.+'
     - 'android-sdk-license-.+'
     - 'google-gdk-license-.+'
     
-before_script:
-  - echo no | android create avd --force -n test -t android-27 --abi x86 -c 100M
-  - emulator -avd test -no-accel -no-snapshot -no-skin -no-audio -no-window -camera-back none -camera-front none -selinux permissive -qemu -m 2048 &
+install:
+  - echo 'count=0' > /home/travis/.android/repositories.cfg # Avoid harmless sdkmanager warning
+  - echo y | sdkmanager "platform-tools" >/dev/null
+  - echo y | sdkmanager "tools" >/dev/null # A second time per Travis docs, gets latest versions
+  - echo y | sdkmanager "build-tools;$ANDROID_BUILD_TOOLS_VERSION" >/dev/null # Implicit gradle dependency - gradle drives changes
+  - echo y | sdkmanager "platforms;android-$EMU_API" >/dev/null # We need the API of the emulator we will run
+  - echo y | sdkmanager "platforms;android-$ANDROID_BUILD_TOOLS_VERSION" >/dev/null # We need the API of the current compileSdkVersion from gradle.properties
+  - echo y | sdkmanager --channel=4 "emulator" # Experiment with canary, specifying 28.0.3 (prior version) did not work
+  - echo y | sdkmanager "extras;android;m2repository" >/dev/null
+  - echo y | sdkmanager "system-images;android-$EMU_API;$EMU_FLAVOR;$EMU_ABI" #>/dev/null # install our emulator
+  - echo no | avdmanager create avd --force -n test -k "system-images;android-$EMU_API;$EMU_FLAVOR;$EMU_ABI" -c 10M
+  - emulator -verbose -avd test -no-accel -no-snapshot -no-window $AUDIO -camera-back none -camera-front none -selinux permissive -qemu -m 2048 &
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
