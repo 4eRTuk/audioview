@@ -1,13 +1,19 @@
+/*
+ *           Copyright © 2019 Stanislav Petriakov
+ *  Distributed under the Boost Software License, Version 1.0.
+ *     (See accompanying file LICENSE_1_0.txt or copy at
+ *           http://www.boost.org/LICENSE_1_0.txt)
+ */
+
 package com.keenfin.audioview;
 
-import android.app.Application;
-import android.test.ApplicationTestCase;
+import org.junit.Test;
 
-/**
- * <a href="http://d.android.com/tools/testing/testing_android.html">Testing Fundamentals</a>
- */
-public class ApplicationTest extends ApplicationTestCase<Application> {
-    public ApplicationTest() {
-        super(Application.class);
+import static org.junit.Assert.assertEquals;
+
+public class ApplicationTest {
+    @Test
+    public void addition_isCorrect() {
+        assertEquals(4, 2 + 2);
     }
 }
