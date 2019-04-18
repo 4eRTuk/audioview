@@ -27,7 +27,7 @@ install:
   - echo y | sdkmanager "tools" >/dev/null # A second time per Travis docs, gets latest versions
   - echo y | sdkmanager "build-tools;$ANDROID_BUILD_TOOLS_VERSION" >/dev/null # Implicit gradle dependency - gradle drives changes
   - echo y | sdkmanager "platforms;android-$EMU_API" >/dev/null # We need the API of the emulator we will run
-  - echo y | sdkmanager "platforms;android-$ANDROID_BUILD_TOOLS_VERSION" >/dev/null # We need the API of the current compileSdkVersion from gradle.properties
+  - echo y | sdkmanager "platforms;android-$ANDROID_API_LEVEL" >/dev/null # We need the API of the current compileSdkVersion from gradle.properties
   - echo y | sdkmanager --channel=4 "emulator" # Experiment with canary, specifying 28.0.3 (prior version) did not work
   - echo y | sdkmanager "extras;android;m2repository" >/dev/null
   - echo y | sdkmanager "system-images;android-$EMU_API;$EMU_FLAVOR;$EMU_ABI" #>/dev/null # install our emulator
