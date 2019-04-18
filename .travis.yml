@@ -36,5 +36,5 @@ install:
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
 
-script:
- - chmod +x ./gradlew build connectedCheck
+before_install:
+ - chmod +x gradlew
