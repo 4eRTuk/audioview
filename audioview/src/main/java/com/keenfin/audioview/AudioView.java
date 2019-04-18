@@ -26,7 +26,7 @@ import static com.keenfin.audioview.Util.formatTime;
 import static com.keenfin.audioview.Util.getTrackTitle;
 
 public class AudioView extends BaseAudioView implements View.OnClickListener {
-    enum SEEKBAR_STATE {STICK, UNSTICK}
+    enum SEEKBAR_STATE {STICK, UNSTICK, PROGRESS}
 
     protected MediaPlayer mMediaPlayer;
     protected ArrayList<Object> mTracks;
@@ -100,17 +100,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
         final Runnable seekBarUpdateTask = new Runnable() {
             @Override
             public void run() {
-                if (mIsPrepared) {
-                    int current = getCurrentPosition();
-                    if (mProgress.getProgress() < current) {
-                        mProgress.setProgress(current);
-                        if (mTotalTime != null)
-                            mTime.setText(formatTime(getCurrentPosition()));
-                        else
-                            mTime.setText(getTrackTime());
-                    }
-                }
-
+                mHandler.sendEmptyMessage(SEEKBAR_STATE.PROGRESS.ordinal());
                 mHandler.postDelayed(this, mProgressDelay);
             }
         };
@@ -128,6 +118,18 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
                     mUiThread = new Thread(seekBarUpdateTask);
                     mUiThread.start();
                     mProgress.setProgress(getCurrentPosition());
+                    return true;
+                } else if (msg.what == SEEKBAR_STATE.PROGRESS.ordinal()) {
+                    if (mIsPrepared) {
+                        int current = getCurrentPosition();
+                        if (mProgress.getProgress() < current) {
+                            mProgress.setProgress(current);
+                            if (mTotalTime != null)
+                                mTime.setText(formatTime(getCurrentPosition()));
+                            else
+                                mTime.setText(getTrackTime());
+                        }
+                    }
                     return true;
                 }
                 return false;
