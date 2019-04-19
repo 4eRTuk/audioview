@@ -37,4 +37,6 @@ install:
   - adb shell input keyevent 82 &
 
 before_install:
- - chmod +x gradlew
+  - chmod +x gradlew
+  - sed "/githubusercontent/d" audioview/build.gradle > audioview/build-mod.gradle
+  - mv audioview/build-mod.gradle audioview/build.gradle
