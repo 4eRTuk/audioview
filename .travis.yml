@@ -5,7 +5,7 @@ env:
     - ADB_INSTALL_TIMEOUT=8
     - EMU_FLAVOR=google_apis # use google_apis flavor if no default flavor emulator
     - EMU_API=27
-    - EMU_ABI=x86_64
+    - EMU_ABI=x86
     - ANDROID_API_LEVEL=28
     - ANDROID_BUILD_TOOLS_VERSION=28.0.3
     - ANDROID_HOME=/usr/local/android-sdk
