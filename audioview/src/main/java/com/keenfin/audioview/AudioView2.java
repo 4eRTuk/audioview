@@ -195,8 +195,11 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        if (getService() == null)
+        if (getService() == null) {
+            bindAudioService();
             return;
+        }
+
         if (!attached()) {
             getService().attachTag(mTag);
             setLoop(mLoop);
@@ -204,6 +207,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
             mClickedView = view;
             return;
         }
+
         int id = view.getId();
         if (id == R.id.play) {
             getService().controlAudio();
