@@ -1,5 +1,5 @@
 /*
- *           Copyright © 2018 Stanislav Petriakov
+ *           Copyright © 2018-2019 Stanislav Petriakov
  *  Distributed under the Boost Software License, Version 1.0.
  *     (See accompanying file LICENSE_1_0.txt or copy at
  *           http://www.boost.org/LICENSE_1_0.txt)
@@ -7,11 +7,14 @@
 
 package com.keenfin.audioviewdemo;
 
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,30 +26,64 @@ import java.util.ArrayList;
 import static com.keenfin.audioviewdemo.MainActivity.URL;
 
 public class ListActivity extends AppCompatActivity {
+    private ArrayList<Audio> mObjects;
+    private AudioService mAudioService;
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            mAudioService = ((AudioService.AudioServiceBinder) iBinder).getService();
+            for (Audio item : mObjects)
+                mAudioService.addToPlaylist(item.getPath());
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mAudioService = null;
+        }
+    };
+
+    private void bindAudioService() {
+        if (mAudioService == null) {
+            Intent intent = new Intent(this, AudioService.class);
+            bindService(intent, mServiceConnection, 0);
+        }
+    }
+
+    private void unbindAudioService() {
+        unbindService(mServiceConnection);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
-        Intent audioService = new Intent(this, AudioService.class);
-        audioService.setAction(AudioService.ACTION_START_AUDIO);
-        startService(audioService);
+//        Intent audioService = new Intent(this, AudioService.class);
+//        startService(audioService);
 
+        mObjects = new ArrayList<>();
+        mObjects.add(new Audio(URL, URL));
+        searchForAudio(mObjects);
+
+        AudioAdapter adapter = new AudioAdapter(mObjects);
         RecyclerView recycler = findViewById(R.id.recycler);
+        recycler.setAdapter(adapter);
+
         int orientation = LinearLayoutManager.VERTICAL;
         LinearLayoutManager manager = new LinearLayoutManager(this, orientation, false);
         recycler.setLayoutManager(manager);
+    }
 
-        ArrayList<Audio> objects = new ArrayList<>();
-        objects.add(new Audio(URL, URL));
-        searchForAudio(objects);
-        AudioAdapter adapter = new AudioAdapter(objects);
-        recycler.setAdapter(adapter);
+    @Override
+    protected void onStart() {
+        super.onStart();
+        bindAudioService();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unbindAudioService();
         Intent audioService = new Intent(this, AudioService.class);
         stopService(audioService);
     }

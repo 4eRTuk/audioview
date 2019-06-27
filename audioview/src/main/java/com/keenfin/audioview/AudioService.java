@@ -7,13 +7,19 @@
 
 package com.keenfin.audioview;
 
-import android.app.Service;
+import android.annotation.TargetApi;
+import android.app.*;
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.view.View;
+import android.widget.RemoteViews;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -23,7 +29,19 @@ import java.util.List;
 public class AudioService extends Service {
     public static final String ACTION_START_AUDIO = "AudioService.START";
     public static final String ACTION_STOP_AUDIO = "AudioService.STOP";
+    public static final String ACTION_PAUSE_AUDIO = "AudioService.PAUSE";
     public static final String ACTION_STATUS_AUDIO = "AudioService.STATUS";
+    public static final String ACTION_CONTROL_AUDIO = "AudioService.CONTROL";
+    public static final String ACTION_NEXT_AUDIO = "AudioService.NEXT";
+    public static final String ACTION_PREVIOUS_AUDIO = "AudioService.PREVIOUS";
+    public static final String ACTION_DESTROY_SERVICE = "AudioService.DESTROY";
+
+    public static final String AUDIO_NOTIFICATION_CHANNEL_ID = "AUDIO_NOTIFICATION_CHANNEL_ID";
+    public static final String AUDIO_NOTIFICATION_ICON_RES = "AUDIO_NOTIFICATION_ICON_RES";
+    public static final String AUDIO_NOTIFICATION_SHOW_CLOSE = "AUDIO_NOTIFICATION_SHOW_CLOSE";
+    public static final String AUDIO_NOTIFICATION_MINIFIED = "AUDIO_NOTIFICATION_MINIFIED";
+
+    public static final int AUDIO_SERVICE_NOTIFICATION = 47910;
 
     public static final int AUDIO_PREPARED = 0;
     public static final int AUDIO_STARTED = 1;
@@ -32,6 +50,7 @@ public class AudioService extends Service {
     public static final int AUDIO_PROGRESS_UPDATED = 4;
     public static final int AUDIO_COMPLETED = 5;
     public static final int AUDIO_TRACK_CHANGED = 6;
+    public static final int AUDIO_SERVICE_STARTED = 7;
 
     private Thread mUiThread;
     private long mProgressDelay = 1000;
@@ -48,6 +67,9 @@ public class AudioService extends Service {
     private boolean mLoop = false;
 
     private AudioServiceBinder mBinder = new AudioServiceBinder();
+    private NotificationManager mNotificationManager;
+    private NotificationCompat.Builder mBuilder;
+    private RemoteViews mContentView;
 
     @Nullable
     @Override
@@ -65,16 +87,19 @@ public class AudioService extends Service {
     public void onCreate() {
         super.onCreate();
         initMediaPlayer();
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
+        broadcast(AUDIO_STOPPED);
         release();
     }
 
     @Override
     public void onDestroy() {
+        broadcast(AUDIO_STOPPED);
         release();
         stopSelf();
         super.onDestroy();
@@ -87,17 +112,116 @@ public class AudioService extends Service {
             action = intent.getAction();
 
         switch (action) {
+            case ACTION_NEXT_AUDIO:
+                nextTrack();
+                break;
+            case ACTION_PREVIOUS_AUDIO:
+                previousTrack();
+                break;
+            case ACTION_CONTROL_AUDIO:
+                controlAudio();
+                break;
             case ACTION_START_AUDIO:
+                start();
+                break;
+            case ACTION_PAUSE_AUDIO:
+                pause();
                 break;
             case ACTION_STOP_AUDIO:
-                release();
-                stopSelf();
+                stop();
                 break;
+            case ACTION_DESTROY_SERVICE:
+                stopForeground(true);
+                stopSelf();
+                return START_NOT_STICKY;
             default:
+                int id = 1;
+                int icon = R.drawable.thumb;
+                boolean showClose = true;
+                boolean minified = false;
+                if (intent != null) {
+                    id = intent.getIntExtra(AUDIO_NOTIFICATION_CHANNEL_ID, id);
+                    icon = intent.getIntExtra(AUDIO_NOTIFICATION_ICON_RES, icon);
+                    showClose = intent.getBooleanExtra(AUDIO_NOTIFICATION_SHOW_CLOSE, true);
+                    minified = intent.getBooleanExtra(AUDIO_NOTIFICATION_MINIFIED, false);
+                    mAttachedTag = intent.getIntExtra("tag", Integer.MIN_VALUE);
+                }
+                addNotification(id, icon, showClose, minified);
+                broadcast(AUDIO_SERVICE_STARTED);
+                mAttachedTag = Integer.MIN_VALUE;
                 break;
         }
-
         return START_STICKY;
+    }
+
+    private PendingIntent getPendingIntent(int code, Intent intent) {
+        PendingIntent pendingIntent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            pendingIntent = PendingIntent.getForegroundService(this, code, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        else
+            pendingIntent = PendingIntent.getService(this, code, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return pendingIntent;
+    }
+
+    private void addNotification(int channelId, int icon, boolean showClose, boolean minified) {
+        mContentView = new RemoteViews(getPackageName(), R.layout.audio_notification);
+//        mContentView.setTextViewText(R.id.artist, getString(R.string.no_artist));
+        mContentView.setTextViewText(R.id.title, getString(R.string.no_title));
+
+        Intent intent = new Intent(this, AudioService.class);
+        intent.setAction(ACTION_CONTROL_AUDIO);
+        PendingIntent pendingIntent = getPendingIntent(94, intent);
+        mContentView.setOnClickPendingIntent(R.id.play, pendingIntent);
+
+        if (!minified) {
+            intent.setAction(ACTION_PREVIOUS_AUDIO);
+            pendingIntent = getPendingIntent(73, intent);
+            mContentView.setOnClickPendingIntent(R.id.rewind, pendingIntent);
+            intent.setAction(ACTION_NEXT_AUDIO);
+            pendingIntent = getPendingIntent(68, intent);
+            mContentView.setOnClickPendingIntent(R.id.forward, pendingIntent);
+        } else {
+            mContentView.setViewVisibility(R.id.title, View.GONE);
+            mContentView.setViewVisibility(R.id.rewind, View.GONE);
+            mContentView.setViewVisibility(R.id.forward, View.GONE);
+        }
+
+        if (showClose) {
+            intent.setAction(ACTION_DESTROY_SERVICE);
+            pendingIntent = getPendingIntent(34, intent);
+            mContentView.setOnClickPendingIntent(R.id.close, pendingIntent);
+        } else
+            mContentView.setViewVisibility(R.id.close, View.GONE);
+
+        mBuilder = createBuilder(this, channelId)
+                .setAutoCancel(false)
+                .setOngoing(true)
+                .setSmallIcon(icon)
+                .setContent(mContentView)
+                .setStyle(new NotificationCompat.DecoratedCustomViewStyle()) // TODO androidx.media.app.NotificationCompat.DecoratedMediaCustomViewStyle
+                // https://developer.android.com/reference/androidx/media/app/NotificationCompat.DecoratedMediaCustomViewStyle.html
+                .setWhen(System.currentTimeMillis());
+
+        startForeground(AUDIO_SERVICE_NOTIFICATION, mBuilder.build());
+    }
+
+    @SuppressWarnings("deprecation")
+    private NotificationCompat.Builder createBuilder(Context context, int id) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            return createBuilderO(context, id);
+        else
+            return new NotificationCompat.Builder(context);
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    private NotificationCompat.Builder createBuilderO(Context context, int id) {
+        String channelId = BuildConfig.APPLICATION_ID + "_" + id;
+        String channelName = context.getString(R.string.audio_channel);
+        NotificationChannel chanel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW);
+        chanel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.createNotificationChannel(chanel);
+        return new NotificationCompat.Builder(context, channelId);
     }
 
     private void initMediaPlayer() {
@@ -149,6 +273,8 @@ public class AudioService extends Service {
                     mWasPlaying = false;
                 }
 
+                mContentView.setTextViewText(R.id.title, getTrackTitle());
+                mNotificationManager.notify(AUDIO_SERVICE_NOTIFICATION, mBuilder.build());
                 broadcast(AUDIO_PREPARED);
             }
         });
@@ -289,10 +415,24 @@ public class AudioService extends Service {
                 setDataSource((FileDescriptor) dataSource);
             } else if (dataSource.getClass() == List.class) {
                 setDataSource((List) dataSource);
-            }
+            } else
+                throw new IllegalArgumentException("AudioView supports only String, Uri, FileDescriptor data sources now.");
         } catch (IOException ignored) {
             throw new IllegalArgumentException("AudioView supports only String, Uri, FileDescriptor data sources now.");
         }
+    }
+
+    public void addToPlaylist(Object item) throws RuntimeException {
+        if (item.getClass() == String.class) {
+            mTracks.add(item);
+        } else if (item.getClass() == Uri.class) {
+            mTracks.add(item);
+        } else if (item.getClass() == FileDescriptor.class) {
+            mTracks.add(item);
+        } else if (item.getClass() == List.class) {
+            mTracks.add(item);
+        } else
+            throw new IllegalArgumentException("AudioView supports only String, Uri, FileDescriptor data sources now.");
     }
 
     public void setDataSource(List tracks) throws RuntimeException {
@@ -367,6 +507,8 @@ public class AudioService extends Service {
     }
 
     public void start() {
+        mContentView.setImageViewResource(R.id.play, R.drawable.ic_pause_white_24dp);
+        mNotificationManager.notify(AUDIO_SERVICE_NOTIFICATION, mBuilder.build());
         if (mIsPrepared) {
             try {
                 mMediaPlayer.start();
@@ -378,6 +520,8 @@ public class AudioService extends Service {
     }
 
     public void pause() {
+        mContentView.setImageViewResource(R.id.play, R.drawable.ic_play_arrow_white_24dp);
+        mNotificationManager.notify(AUDIO_SERVICE_NOTIFICATION, mBuilder.build());
         try {
             if (mIsPrepared && mMediaPlayer.isPlaying())
                 mMediaPlayer.pause();
@@ -390,6 +534,8 @@ public class AudioService extends Service {
     }
 
     public void stop() {
+        mContentView.setImageViewResource(R.id.play, R.drawable.ic_play_arrow_white_24dp);
+        mNotificationManager.notify(AUDIO_SERVICE_NOTIFICATION, mBuilder.build());
         try {
             if (mIsPrepared)
                 mMediaPlayer.stop();

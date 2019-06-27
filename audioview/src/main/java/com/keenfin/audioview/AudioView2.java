@@ -7,6 +7,7 @@
 
 package com.keenfin.audioview;
 
+import android.app.ActivityManager;
 import android.content.*;
 import android.net.Uri;
 import android.os.IBinder;
@@ -23,6 +24,7 @@ import static com.keenfin.audioview.AudioService.*;
 
 public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     private boolean mFrozen = false;
+    private boolean mAutoStartService = true;
     private int mSeekTo = -1;
     private int mTag;
     protected Object mDataSource;
@@ -54,6 +56,10 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
                 case AUDIO_STOPPED:
                 case AUDIO_PAUSED:
                     setPlayIcon();
+                    break;
+                case AUDIO_SERVICE_STARTED:
+                    if (mAutoStartService && intent.getIntExtra("tag", Integer.MIN_VALUE) == mTag)
+                        onClick(findViewById(R.id.play));
                     break;
             }
 
@@ -159,6 +165,16 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
         });
     }
 
+    private boolean isServiceRunning() {
+        ActivityManager manager = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (AudioService.class.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void bindAudioService() {
         if (getService() == null) {
             Intent intent = new Intent(getContext(), AudioService.class);
@@ -181,6 +197,8 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
         bindAudioService();
         IntentFilter filter = new IntentFilter(ACTION_STATUS_AUDIO);
         getContext().registerReceiver(mAudioReceiver, filter);
+        if (!attached() || attached() && !getService().isPlaying())
+            setPlayIcon();
     }
 
     @Override
@@ -195,6 +213,12 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
+        if (mAutoStartService && !isServiceRunning()) {
+            Intent audioService = new Intent(getContext(), AudioService.class);
+            audioService.putExtra("tag",  mTag);
+            getContext().startService(audioService);
+        }
+
         if (getService() == null) {
             bindAudioService();
             return;
@@ -295,6 +319,10 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
 
     public void setTag(int tag) {
         mTag = tag;
+    }
+
+    public void setAutoStartService(boolean autostart) {
+        mAutoStartService = autostart;
     }
 
     public boolean attached() {
