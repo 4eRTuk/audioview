@@ -27,6 +27,10 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     private boolean mAutoStartService = true;
     private int mSeekTo = -1;
     private int mTag;
+    private int mServiceNotificationId = 1;
+    private int mServiceNotificationIcon = R.drawable.thumb;
+    private boolean mServiceNotificationShowClose = true;
+    private boolean mServiceNotificationMinified = false;
     protected Object mDataSource;
     private AudioService.AudioServiceBinder mServiceBinder = null;
     private View mClickedView;
@@ -216,6 +220,10 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
         if (mAutoStartService && !isServiceRunning()) {
             Intent audioService = new Intent(getContext(), AudioService.class);
             audioService.putExtra("tag",  mTag);
+            audioService.putExtra(AUDIO_NOTIFICATION_SHOW_CLOSE,  mServiceNotificationShowClose);
+            audioService.putExtra(AUDIO_NOTIFICATION_MINIFIED,  mServiceNotificationMinified);
+            audioService.putExtra(AUDIO_NOTIFICATION_CHANNEL_ID,  mServiceNotificationId);
+            audioService.putExtra(AUDIO_NOTIFICATION_ICON_RES,  mServiceNotificationIcon);
             getContext().startService(audioService);
         }
 
@@ -323,6 +331,22 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
 
     public void setAutoStartService(boolean autostart) {
         mAutoStartService = autostart;
+    }
+
+    public void setServiceNotificationId(int id) {
+        mServiceNotificationId = id;
+    }
+
+    public void setServiceNotificationIcon(int icon) {
+        mServiceNotificationIcon = icon;
+    }
+
+    public void setServiceNotificationShowClose(boolean showClose) {
+        mServiceNotificationShowClose = showClose;
+    }
+
+    public void setServiceNotificationMinified(boolean minified) {
+        mServiceNotificationMinified = minified;
     }
 
     public boolean attached() {

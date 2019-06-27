@@ -51,6 +51,7 @@ public class AudioService extends Service {
     public static final int AUDIO_COMPLETED = 5;
     public static final int AUDIO_TRACK_CHANGED = 6;
     public static final int AUDIO_SERVICE_STARTED = 7;
+    public static final int AUDIO_SERVICE_STOPPED = 8;
 
     private Thread mUiThread;
     private long mProgressDelay = 1000;
@@ -100,6 +101,7 @@ public class AudioService extends Service {
     @Override
     public void onDestroy() {
         broadcast(AUDIO_STOPPED);
+        broadcast(AUDIO_SERVICE_STOPPED);
         release();
         stopSelf();
         super.onDestroy();
