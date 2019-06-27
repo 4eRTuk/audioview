@@ -457,7 +457,8 @@ public class AudioService extends Service {
         try {
             mMediaPlayer.setDataSource(path);
             prepare(path);
-        } catch (IllegalStateException ignored) {
+        } catch (IllegalStateException e) {
+            initMediaPlayer();
         }
     }
 
@@ -466,7 +467,8 @@ public class AudioService extends Service {
         try {
             mMediaPlayer.setDataSource(this, uri);
             prepare(uri);
-        } catch (IllegalStateException ignored) {
+        } catch (IllegalStateException e) {
+            initMediaPlayer();
         }
     }
 
@@ -475,7 +477,8 @@ public class AudioService extends Service {
         try {
             mMediaPlayer.setDataSource(fd);
             prepare(fd);
-        } catch (IllegalStateException ignored) {
+        } catch (IllegalStateException e) {
+            initMediaPlayer();
         }
     }
 
@@ -504,7 +507,8 @@ public class AudioService extends Service {
         try {
             mMediaPlayer.prepareAsync();
             mCurrentSource = source;
-        } catch (IllegalStateException ignored) {
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
         }
     }
 
