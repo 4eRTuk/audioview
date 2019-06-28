@@ -13,7 +13,7 @@ Simple Android audio view with a few controls. Basically it's a MediaPlayer wrap
 
 ``` gradle
 dependencies {
-    implementation 'com.4ert:audioview:0.4'
+    implementation 'com.4ert:audioview:1.4.5'
 }
 ```
 
@@ -52,7 +52,7 @@ Multiple AudioView2 with different tags can attach to service and play through i
     android:layout_height="wrap_content"/>
 ```
 
-2. **Start AudioService to handle playback**
+2. **Start AudioService to handle playback (optional)**
 
 ``` java
 Intent audioService = new Intent(this, AudioService.class);
@@ -73,12 +73,14 @@ try {
 }
 ```
 
-5. **Stop service when you do not need it anymore**
+5. **Stop service when you do not need it anymore (optional)**
 
 ``` java
 Intent audioService = new Intent(this, AudioService.class);
 stopService(audioService);
 ```
+
+There is a default behaviour for AudioView2 to start service automatically if it is not running yet. You can disable this by setting AudioView2.setAutoStartServie(false), but you can not omit 2 and 5 steps in this case. 
 
 
 ## Attach to service to implement your own behaviour
@@ -152,6 +154,25 @@ private void unregisterAudioReceiver() {
     }
 }
 ```
+
+
+## Audio notification for service
+For AudioView2 and associated service foreground notification is applied. There are default playback controls plus close icon to stop and destroy service. You can setup following parameters through service intent or by proxying them over AudioView2: 
+#### AUDIO_NOTIFICATION_CHANNEL_ID
+#### AudioView2.setServiceNotificationId(int id)
+Integer to append to default string channel id for Android 8+
+
+#### AUDIO_NOTIFICATION_ICON_RES
+#### AudioView2.setServiceNotificationIcon(int icon)
+Drawable integer resource to show in status bar for notification
+
+#### AUDIO_NOTIFICATION_SHOW_CLOSE
+#### AudioView2.setServiceNotificationShowClose(boolean showClose)
+Boolean to show close service button or not
+
+#### AUDIO_NOTIFICATION_MINIFIED
+#### AudioView2.setServiceNotificationMinified(boolean minified)
+Boolean to hide previous/next and title views
 
 
 ## Styles & options

@@ -58,6 +58,10 @@ public class ListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
+        /*
+            Uncomment lines to start service separately
+            And probably you want to set each AudioView2.setAutoStartService(false)
+        */
 //        Intent audioService = new Intent(this, AudioService.class);
 //        startService(audioService);
 

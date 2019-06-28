@@ -12,6 +12,7 @@ import android.content.*;
 import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.SeekBar;
@@ -34,6 +35,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     protected Object mDataSource;
     private AudioService.AudioServiceBinder mServiceBinder = null;
     private View mClickedView;
+    private boolean mFixPlayback;
 
     private AudioService getService() {
         return mServiceBinder != null ? mServiceBinder.getService() : null;
@@ -44,6 +46,11 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
 //            Log.d("AudioView", "connected");
             mServiceBinder = ((AudioService.AudioServiceBinder) iBinder);
+
+            if (mFixPlayback) {
+                onClick(findViewById(R.id.play));
+                mFixPlayback = false;
+            }
         }
 
         @Override
@@ -64,7 +71,10 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
                     break;
                 case AUDIO_SERVICE_STARTED:
                     if (mAutoStartService && intent.getIntExtra("tag", Integer.MIN_VALUE) == mTag)
-                        onClick(findViewById(R.id.play));
+                        if (mServiceBinder != null)
+                            onClick(findViewById(R.id.play));
+                        else
+                            mFixPlayback = true;
                     break;
                 case AUDIO_SERVICE_STOPPED:
                     unbindAudioService();
@@ -231,7 +241,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
             audioService.putExtra(AUDIO_NOTIFICATION_MINIFIED,  mServiceNotificationMinified);
             audioService.putExtra(AUDIO_NOTIFICATION_CHANNEL_ID,  mServiceNotificationId);
             audioService.putExtra(AUDIO_NOTIFICATION_ICON_RES,  mServiceNotificationIcon);
-            getContext().startService(audioService);
+            ContextCompat.startForegroundService(getContext(), audioService);
         }
 
         if (getService() == null) {
