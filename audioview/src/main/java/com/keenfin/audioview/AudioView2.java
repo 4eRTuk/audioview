@@ -42,6 +42,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+//            Log.d("AudioView", "connected");
             mServiceBinder = ((AudioService.AudioServiceBinder) iBinder);
         }
 
@@ -66,6 +67,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
                         onClick(findViewById(R.id.play));
                     break;
                 case AUDIO_SERVICE_STOPPED:
+                    unbindAudioService();
                     mServiceBinder = null;
                     mProgress.setProgress(0);
                     mTime.setText("");
@@ -186,13 +188,14 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
 
     private void bindAudioService() {
         Intent intent = new Intent(getContext(), AudioService.class);
-        getContext().bindService(intent, mServiceConnection, 0);
+        boolean b = getContext().getApplicationContext().bindService(intent, mServiceConnection, 0);
+//        Log.d("AudioView", "binded " + b);
     }
 
     private void unbindAudioService() {
         if (getService() != null) {
             try {
-                getContext().unbindService(mServiceConnection);
+                getContext().getApplicationContext().unbindService(mServiceConnection);
             } catch (Exception ignored) {
             }
         }

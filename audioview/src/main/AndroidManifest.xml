@@ -13,7 +13,7 @@
     <application>
 
         <service
-            android:name=".AudioService"
+            android:name="com.keenfin.audioview.AudioService"
             android:enabled="true"
             android:exported="true" />
     </application>
