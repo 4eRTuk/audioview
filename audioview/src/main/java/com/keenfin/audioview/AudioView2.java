@@ -65,6 +65,11 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
                     if (mAutoStartService && intent.getIntExtra("tag", Integer.MIN_VALUE) == mTag)
                         onClick(findViewById(R.id.play));
                     break;
+                case AUDIO_SERVICE_STOPPED:
+                    mServiceBinder = null;
+                    mProgress.setProgress(0);
+                    mTime.setText("");
+                    break;
             }
 
             if (getService() == null || !attached())
@@ -180,10 +185,8 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     }
 
     private void bindAudioService() {
-        if (getService() == null) {
-            Intent intent = new Intent(getContext(), AudioService.class);
-            getContext().bindService(intent, mServiceConnection, 0);
-        }
+        Intent intent = new Intent(getContext(), AudioService.class);
+        getContext().bindService(intent, mServiceConnection, 0);
     }
 
     private void unbindAudioService() {
@@ -198,6 +201,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        mServiceBinder = null;
         bindAudioService();
         IntentFilter filter = new IntentFilter(ACTION_STATUS_AUDIO);
         getContext().registerReceiver(mAudioReceiver, filter);
