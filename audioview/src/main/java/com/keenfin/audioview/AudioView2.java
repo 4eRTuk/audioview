@@ -12,7 +12,6 @@ import android.content.*;
 import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.SeekBar;
@@ -241,7 +240,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
             audioService.putExtra(AUDIO_NOTIFICATION_MINIFIED,  mServiceNotificationMinified);
             audioService.putExtra(AUDIO_NOTIFICATION_CHANNEL_ID,  mServiceNotificationId);
             audioService.putExtra(AUDIO_NOTIFICATION_ICON_RES,  mServiceNotificationIcon);
-            ContextCompat.startForegroundService(getContext(), audioService);
+            getContext().startService(audioService);
         }
 
         if (getService() == null) {

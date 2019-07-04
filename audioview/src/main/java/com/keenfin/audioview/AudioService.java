@@ -103,7 +103,8 @@ public class AudioService extends Service {
         broadcast(AUDIO_STOPPED);
         broadcast(AUDIO_SERVICE_STOPPED);
         release();
-        stopSelf();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
+            stopSelf();
         super.onDestroy();
     }
 
@@ -134,7 +135,8 @@ public class AudioService extends Service {
                 break;
             case ACTION_DESTROY_SERVICE:
                 stopForeground(true);
-                stopSelf();
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
+                    stopSelf();
                 return START_NOT_STICKY;
             default:
                 int id = 1;

@@ -64,6 +64,7 @@ public class ListActivity extends AppCompatActivity {
         */
 //        Intent audioService = new Intent(this, AudioService.class);
 //        startService(audioService);
+//        stopService(audioService);
 
         mObjects = new ArrayList<>();
         mObjects.add(new Audio(URL, URL));
