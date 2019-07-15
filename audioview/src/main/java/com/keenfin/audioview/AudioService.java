@@ -72,7 +72,7 @@ public class AudioService extends Service {
     private AudioServiceBinder mBinder = new AudioServiceBinder();
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mBuilder;
-    private RemoteViews mContentView;
+    private RemoteViews mContentView, mContentViewMin;
 
     @Nullable
     @Override
@@ -170,8 +170,10 @@ public class AudioService extends Service {
 
     private void addNotification(int channelId, int icon, boolean showClose, boolean minified) {
         mContentView = new RemoteViews(getPackageName(), R.layout.audio_notification);
+        mContentViewMin = new RemoteViews(getPackageName(), R.layout.audio_notification_minified);
 //        mContentView.setTextViewText(R.id.artist, getString(R.string.no_artist));
         mContentView.setTextViewText(R.id.title, getString(R.string.no_title));
+        mContentViewMin.setTextViewText(R.id.title, getString(R.string.no_title));
 
         Intent intent = new Intent(this, AudioService.class);
         intent.setAction(ACTION_CONTROL_AUDIO);
@@ -203,6 +205,8 @@ public class AudioService extends Service {
                 .setOngoing(true)
                 .setSmallIcon(icon)
                 .setContent(mContentView)
+                .setCustomContentView(mContentViewMin)
+                .setCustomBigContentView(mContentView)
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle()) // TODO androidx.media.app.NotificationCompat.DecoratedMediaCustomViewStyle
                 // https://developer.android.com/reference/androidx/media/app/NotificationCompat.DecoratedMediaCustomViewStyle.html
                 .setWhen(System.currentTimeMillis());
@@ -279,6 +283,7 @@ public class AudioService extends Service {
                 }
 
                 mContentView.setTextViewText(R.id.title, getTrackTitle());
+                mContentViewMin.setTextViewText(R.id.title, getTrackTitle());
                 mNotificationManager.notify(AUDIO_SERVICE_NOTIFICATION, mBuilder.build());
                 broadcast(AUDIO_PREPARED);
             }
