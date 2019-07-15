@@ -13,7 +13,7 @@ Simple Android audio view with a few controls. Basically it's a MediaPlayer wrap
 
 ``` gradle
 dependencies {
-    implementation 'com.4ert:audioview:1.4.5'
+    implementation 'com.4ert:audioview:1.4.8'
 }
 ```
 
@@ -50,6 +50,7 @@ Multiple AudioView2 with different tags can attach to service and play through i
     android:id="@+id/audioview"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"/>
+```
 ```
 
 2. **Start AudioService to handle playback (optional)**
@@ -107,12 +108,12 @@ private ServiceConnection mServiceConnection = new ServiceConnection() {
 ``` java
 private void bindAudioService() {
     Intent intent = new Intent(getContext(), AudioService.class);
-    getContext().bindService(intent, mServiceConnection, 0);
+    getApplicationContext().bindService(intent, mServiceConnection, 0);
 }
 
 private void unbindAudioService() {
     try {
-        getContext().unbindService(mServiceConnection);
+        getApplicationContext().unbindService(mServiceConnection);
     } catch (Exception ignored) {
     }
 }
@@ -154,6 +155,15 @@ private void unregisterAudioReceiver() {
     }
 }
 ```
+
+## Or send command to service to control playback
+- ACTION_START_AUDIO
+- ACTION_PAUSE_AUDIO
+- ACTION_STOP_AUDIO
+- ACTION_PREVIOUS_AUDIO
+- ACTION_NEXT_AUDIO
+- ACTION_CONTROL_AUDIO (to start/pause depending on current state)
+- ACTION_DESTROY_SERVICE (to immediately destroy)
 
 
 ## Audio notification for service
