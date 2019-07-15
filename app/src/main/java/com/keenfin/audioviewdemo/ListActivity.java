@@ -45,12 +45,12 @@ public class ListActivity extends AppCompatActivity {
     private void bindAudioService() {
         if (mAudioService == null) {
             Intent intent = new Intent(this, AudioService.class);
-            bindService(intent, mServiceConnection, 0);
+            getApplicationContext().bindService(intent, mServiceConnection, 0);
         }
     }
 
     private void unbindAudioService() {
-        unbindService(mServiceConnection);
+        getApplicationContext().unbindService(mServiceConnection);
     }
 
     @Override

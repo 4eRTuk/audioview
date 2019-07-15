@@ -41,7 +41,7 @@ public class AudioService extends Service {
     public static final String AUDIO_NOTIFICATION_SHOW_CLOSE = "AUDIO_NOTIFICATION_SHOW_CLOSE";
     public static final String AUDIO_NOTIFICATION_MINIFIED = "AUDIO_NOTIFICATION_MINIFIED";
 
-    public static final int AUDIO_SERVICE_NOTIFICATION = 47910;
+    public static final int AUDIO_SERVICE_NOTIFICATION = 4;
 
     public static final int AUDIO_PREPARED = 0;
     public static final int AUDIO_STARTED = 1;
@@ -52,6 +52,8 @@ public class AudioService extends Service {
     public static final int AUDIO_TRACK_CHANGED = 6;
     public static final int AUDIO_SERVICE_STARTED = 7;
     public static final int AUDIO_SERVICE_STOPPED = 8;
+
+    public static boolean SERVICE_RUNNING = false;
 
     private Thread mUiThread;
     private long mProgressDelay = 1000;
@@ -89,6 +91,7 @@ public class AudioService extends Service {
         super.onCreate();
         initMediaPlayer();
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        SERVICE_RUNNING = true;
     }
 
     @Override
@@ -491,6 +494,7 @@ public class AudioService extends Service {
         } catch (Exception ignored) {
         }
         mIsPrepared = false;
+        SERVICE_RUNNING = false;
     }
 
     public void reset() {

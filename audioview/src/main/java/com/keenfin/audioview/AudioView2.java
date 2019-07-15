@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
 
@@ -185,16 +186,6 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
         });
     }
 
-    private boolean isServiceRunning() {
-        ActivityManager manager = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (AudioService.class.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void bindAudioService() {
         Intent intent = new Intent(getContext(), AudioService.class);
         boolean b = getContext().getApplicationContext().bindService(intent, mServiceConnection, 0);
@@ -233,7 +224,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        if (mAutoStartService && !isServiceRunning()) {
+        if (mAutoStartService && !SERVICE_RUNNING) {
             Intent audioService = new Intent(getContext(), AudioService.class);
             audioService.putExtra("tag",  mTag);
             audioService.putExtra(AUDIO_NOTIFICATION_SHOW_CLOSE,  mServiceNotificationShowClose);
