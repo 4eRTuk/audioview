@@ -80,7 +80,8 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
                     unbindAudioService();
                     mServiceBinder = null;
                     mProgress.setProgress(0);
-                    mTime.setText("");
+                    if (mTime != null)
+                        mTime.setText("");
                     break;
             }
 
@@ -120,7 +121,8 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
                                 setDuration(-1);
                                 setPauseIcon();
                             }
-                            mTime.setText(getService().formatTime(mTotalTime == null));
+                            if (mTime != null)
+                                mTime.setText(getService().formatTime(mTotalTime == null));
                         } else {
                             if (mProgress.getProgress() < current)
                                 mProgress.setProgress(current);
@@ -166,7 +168,8 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
                 if (fromUser)
                     mSeekTo = progress;
 
-                mTime.setText(getService().formatTime(mTotalTime == null));
+                if (mTime != null)
+                    mTime.setText(getService().formatTime(mTotalTime == null));
             }
 
             @Override
@@ -178,7 +181,8 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (getService() != null && getService().isPrepared() && attached()) {
                     getService().seekTo(mSeekTo);
-                    mTime.setText(getService().formatTime(mTotalTime == null));
+                    if (mTime != null)
+                        mTime.setText(getService().formatTime(mTotalTime == null));
                 }
                 mSeekTo = -1;
                 mFrozen = false;

@@ -32,7 +32,7 @@ import java.util.List;
 import static com.keenfin.audioview.Util.formatDuration;
 
 public abstract class BaseAudioView extends FrameLayout implements View.OnClickListener {
-    protected ImageButton mRewind, mForward, mPlay;
+    protected View mRewind, mForward, mPlay;
     protected TextView mTitle, mTime, mTotalTime;
     protected SeekBar mProgress;
     protected ProgressBar mIndeterminate;
@@ -104,21 +104,27 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
         mRewind = findViewById(R.id.rewind);
         mForward = findViewById(R.id.forward);
         if (!mSelectControls) {
-            mRewind.setVisibility(GONE);
-            mForward.setVisibility(GONE);
+            if (mRewind != null)
+                mRewind.setVisibility(GONE);
+            if (mForward != null)
+                mForward.setVisibility(GONE);
         }
         mProgress = findViewById(R.id.progress);
         mIndeterminate = findViewById(R.id.indeterminate);
         mTitle = findViewById(R.id.title);
-        mTitle.setSelected(true);
-        mTitle.setMovementMethod(new ScrollingMovementMethod());
-        if (!mShowTitle)
-            mTitle.setVisibility(GONE);
+        if (mTitle != null) {
+            mTitle.setSelected(true);
+            mTitle.setMovementMethod(new ScrollingMovementMethod());
+            if (!mShowTitle)
+                mTitle.setVisibility(GONE);
+        }
         mTime = findViewById(R.id.time);
         mTotalTime = findViewById(R.id.total_time);
         mPlay.setOnClickListener(this);
-        mRewind.setOnClickListener(this);
-        mForward.setOnClickListener(this);
+        if (mRewind != null)
+            mRewind.setOnClickListener(this);
+        if (mForward != null)
+            mForward.setOnClickListener(this);
 
         if (mPrimaryColor != 0) {
             mProgress.getProgressDrawable().setColorFilter(mPrimaryColor, PorterDuff.Mode.MULTIPLY);
@@ -146,10 +152,12 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
         mProgress.setVisibility(VISIBLE);
         mIndeterminate.setVisibility(GONE);
         setPlayIcon();
-        mTime.setText("");
+        if (mTime != null)
+            mTime.setText("");
         if (mTotalTime != null)
             mTotalTime.setText("");
-        mTitle.setText("");
+        if (mTitle != null)
+            mTitle.setText("");
     }
 
     protected void setDuration(int duration) {
@@ -166,7 +174,7 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
 
         if (mTotalTime != null)
             mTotalTime.setText(totalTime);
-        else
+        else if (mTime != null)
             mTime.setText(totalTime);
     }
 
