@@ -32,7 +32,8 @@ import java.util.List;
 import static com.keenfin.audioview.Util.formatDuration;
 
 public abstract class BaseAudioView extends FrameLayout implements View.OnClickListener {
-    protected View mRewind, mForward, mPlay;
+    protected ImageButton mPlay;
+    protected View mRewind, mForward;
     protected TextView mTitle, mTime, mTotalTime;
     protected SeekBar mProgress;
     protected ProgressBar mIndeterminate;
