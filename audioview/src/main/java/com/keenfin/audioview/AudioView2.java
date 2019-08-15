@@ -124,8 +124,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
                             if (mTime != null)
                                 mTime.setText(getService().formatTime(mTotalTime == null));
                         } else {
-                            if (mProgress.getProgress() < current)
-                                mProgress.setProgress(current);
+                            mProgress.setProgress(current);
                         }
                     }
                     break;
