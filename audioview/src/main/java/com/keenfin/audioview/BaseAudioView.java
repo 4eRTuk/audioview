@@ -81,11 +81,8 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
             if (styleable.hasValue(R.styleable.BaseAudioView_primaryColor))
                 mPrimaryColor = styleable.getColor(R.styleable.BaseAudioView_primaryColor, 0xFF000000);
 
-            if ((styleable.hasValue(R.styleable.BaseAudioView_minified)
-                    || styleable.hasValue(R.styleable.BaseAudioView_primaryColor))
-                    && mCustomLayoutRes != 0) {
-                throw new RuntimeException("Minified and primaryColor attr should not be specified " +
-                        "while using custom layout.");
+            if (styleable.hasValue(R.styleable.BaseAudioView_minified) && mCustomLayoutRes != 0) {
+                throw new RuntimeException("Minified attr should not be specified while using custom layout.");
             }
             styleable.recycle();
         }
@@ -139,11 +136,11 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
                 }
             }
 
-            // At this point mPlay will always be FloatingActionButton
-            // (attrs customLayout and primaryColor are mutually exclusive).
-            FloatingActionButton mPlayFloating = (FloatingActionButton) mPlay;
-            mPlayFloating.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            mPlayFloating.setRippleColor(darkenColor(mPrimaryColor, 0.87f));
+            if (mPlay instanceof FloatingActionButton) {
+                FloatingActionButton mPlayFloating = (FloatingActionButton) mPlay;
+                mPlayFloating.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+                mPlayFloating.setRippleColor(darkenColor(mPrimaryColor, 0.87f));
+            }
         }
     }
 

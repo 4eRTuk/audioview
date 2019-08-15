@@ -169,37 +169,48 @@ private void unregisterAudioReceiver() {
 ## Audio notification for service
 For AudioView2 and associated service foreground notification is applied. There are default playback controls plus close icon to stop and destroy service. You can setup following parameters through service intent or by proxying them over AudioView2: 
 #### AUDIO_NOTIFICATION_CHANNEL_ID
-#### AudioView2.setServiceNotificationId(int id)
+__AudioView2.setServiceNotificationId(int id)__
+
 Integer to append to default string channel id for Android 8+
 
 #### AUDIO_NOTIFICATION_ICON_RES
-#### AudioView2.setServiceNotificationIcon(int icon)
+__AudioView2.setServiceNotificationIcon(int icon)__
+
 Drawable integer resource to show in status bar for notification
 
 #### AUDIO_NOTIFICATION_SHOW_CLOSE
-#### AudioView2.setServiceNotificationShowClose(boolean showClose)
+__AudioView2.setServiceNotificationShowClose(boolean showClose)__
+
 Boolean to show close service button or not
 
 #### AUDIO_NOTIFICATION_MINIFIED
-#### AudioView2.setServiceNotificationMinified(boolean minified)
+__AudioView2.setServiceNotificationMinified(boolean minified)__
+
 Boolean to hide previous/next and title views
 
 
 ## Styles & options
 #### primaryColor
-Set default color for FAB and SeekBar. By default it uses colorAccent from AppTheme.
+Set default color for FAB, SeekBar and ProgressBar. By default it uses colorAccent from AppTheme.
 
 #### minified
 Use alternative version of layout if true.
 
 #### customLayout
-Specify custom player layout reference. Should contain
-- TextViews R.id.time, R.id.title;
-- ImageButtons R.id.rewind, R.id.forward, R.id.play;
+Specify custom player layout reference. Must contain:
+- ImageButton R.id.play;
 - SeekBar R.id.progress;
 - ProgressBar R.id.indeterminate.
 
-Mutually exclusive with minified and primaryColor.
+Optionally:
+- TextViews R.id.title, R.id.time, R.id.total_time;
+- View R.id.rewind, R.id.forward
+
+If ```R.id.time``` defined, then it shows "time/total time" like "00:01/03:55".
+
+If ```R.id.total_time``` defined also, then ```R.id.time``` shows time like "00:01" and total time shows total like "03:55"
+
+Mutually exclusive with minified. If you want tint your own colors, just omit primaryColor.
 ```
 ...
 app:customLayout="@layout/my_custom_layout"
