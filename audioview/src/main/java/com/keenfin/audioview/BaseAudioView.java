@@ -32,7 +32,8 @@ import java.util.List;
 import static com.keenfin.audioview.Util.formatDuration;
 
 public abstract class BaseAudioView extends FrameLayout implements View.OnClickListener {
-    protected ImageButton mRewind, mForward, mPlay;
+    protected ImageButton mPlay;
+    protected View mRewind, mForward;
     protected TextView mTitle, mTime, mTotalTime;
     protected SeekBar mProgress;
     protected ProgressBar mIndeterminate;
@@ -81,11 +82,8 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
             if (styleable.hasValue(R.styleable.BaseAudioView_primaryColor))
                 mPrimaryColor = styleable.getColor(R.styleable.BaseAudioView_primaryColor, 0xFF000000);
 
-            if ((styleable.hasValue(R.styleable.BaseAudioView_minified)
-                    || styleable.hasValue(R.styleable.BaseAudioView_primaryColor))
-                    && mCustomLayoutRes != 0) {
-                throw new RuntimeException("Minified and primaryColor attr should not be specified " +
-                        "while using custom layout.");
+            if (styleable.hasValue(R.styleable.BaseAudioView_minified) && mCustomLayoutRes != 0) {
+                throw new RuntimeException("Minified attr should not be specified while using custom layout.");
             }
             styleable.recycle();
         }
@@ -104,21 +102,27 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
         mRewind = findViewById(R.id.rewind);
         mForward = findViewById(R.id.forward);
         if (!mSelectControls) {
-            mRewind.setVisibility(GONE);
-            mForward.setVisibility(GONE);
+            if (mRewind != null)
+                mRewind.setVisibility(GONE);
+            if (mForward != null)
+                mForward.setVisibility(GONE);
         }
         mProgress = findViewById(R.id.progress);
         mIndeterminate = findViewById(R.id.indeterminate);
         mTitle = findViewById(R.id.title);
-        mTitle.setSelected(true);
-        mTitle.setMovementMethod(new ScrollingMovementMethod());
-        if (!mShowTitle)
-            mTitle.setVisibility(GONE);
+        if (mTitle != null) {
+            mTitle.setSelected(true);
+            mTitle.setMovementMethod(new ScrollingMovementMethod());
+            if (!mShowTitle)
+                mTitle.setVisibility(GONE);
+        }
         mTime = findViewById(R.id.time);
         mTotalTime = findViewById(R.id.total_time);
         mPlay.setOnClickListener(this);
-        mRewind.setOnClickListener(this);
-        mForward.setOnClickListener(this);
+        if (mRewind != null)
+            mRewind.setOnClickListener(this);
+        if (mForward != null)
+            mForward.setOnClickListener(this);
 
         if (mPrimaryColor != 0) {
             mProgress.getProgressDrawable().setColorFilter(mPrimaryColor, PorterDuff.Mode.MULTIPLY);
@@ -133,11 +137,11 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
                 }
             }
 
-            // At this point mPlay will always be FloatingActionButton
-            // (attrs customLayout and primaryColor are mutually exclusive).
-            FloatingActionButton mPlayFloating = (FloatingActionButton) mPlay;
-            mPlayFloating.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
-            mPlayFloating.setRippleColor(darkenColor(mPrimaryColor, 0.87f));
+            if (mPlay instanceof FloatingActionButton) {
+                FloatingActionButton mPlayFloating = (FloatingActionButton) mPlay;
+                mPlayFloating.setBackgroundTintList(ColorStateList.valueOf(mPrimaryColor));
+                mPlayFloating.setRippleColor(darkenColor(mPrimaryColor, 0.87f));
+            }
         }
     }
 
@@ -146,10 +150,12 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
         mProgress.setVisibility(VISIBLE);
         mIndeterminate.setVisibility(GONE);
         setPlayIcon();
-        mTime.setText("");
+        if (mTime != null)
+            mTime.setText("");
         if (mTotalTime != null)
             mTotalTime.setText("");
-        mTitle.setText("");
+        if (mTitle != null)
+            mTitle.setText("");
     }
 
     protected void setDuration(int duration) {
@@ -166,7 +172,7 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
 
         if (mTotalTime != null)
             mTotalTime.setText(totalTime);
-        else
+        else if (mTime != null)
             mTime.setText(totalTime);
     }
 

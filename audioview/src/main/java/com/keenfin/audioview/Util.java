@@ -1,5 +1,5 @@
 /*
- *           Copyright © 2018 Stanislav Petriakov
+ *           Copyright © 2018-2019 Stanislav Petriakov
  *  Distributed under the Boost Software License, Version 1.0.
  *     (See accompanying file LICENSE_1_0.txt or copy at
  *           http://www.boost.org/LICENSE_1_0.txt)
@@ -11,27 +11,33 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.text.TextUtils;
 
 import java.io.FileDescriptor;
 
 public final class Util {
     public static String getTrackTitle(Context context, Object source) {
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
-        if (source instanceof String)
-            metaRetriever.setDataSource((String) source);
-        if (source instanceof Uri)
-            metaRetriever.setDataSource(context, (Uri) source);
-        if (source instanceof FileDescriptor)
-            metaRetriever.setDataSource((FileDescriptor) source);
+        try {
+            if (source instanceof String)
+                metaRetriever.setDataSource((String) source);
+            if (source instanceof Uri)
+                metaRetriever.setDataSource(context, (Uri) source);
+            if (source instanceof FileDescriptor)
+                metaRetriever.setDataSource((FileDescriptor) source);
+        } catch (IllegalArgumentException ignored) {
+        }
 
         String artist = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
         String title = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         metaRetriever.release();
 
-        if (artist != null && title != null)
+        if (artist != null && !TextUtils.isEmpty(artist) && title != null && !TextUtils.isEmpty(title))
             return artist + " - " + title;
-        if (artist == null && title != null)
+        if ((artist == null || TextUtils.isEmpty(artist)) && title != null && !TextUtils.isEmpty(title))
             return title;
+        if (artist == null || TextUtils.isEmpty(artist))
+            return context.getString(R.string.no_title);
         return artist;
     }
 

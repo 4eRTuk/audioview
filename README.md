@@ -13,7 +13,7 @@ Simple Android audio view with a few controls. Basically it's a MediaPlayer wrap
 
 ``` gradle
 dependencies {
-    implementation 'com.4ert:audioview:1.2'
+    implementation 'com.4ert:audioview:1.4.8'
 }
 ```
 
@@ -51,8 +51,9 @@ Multiple AudioView2 with different tags can attach to service and play through i
     android:layout_width="match_parent"
     android:layout_height="wrap_content"/>
 ```
+```
 
-2. **Start AudioService to handle playback**
+2. **Start AudioService to handle playback (optional)**
 
 ``` java
 Intent audioService = new Intent(this, AudioService.class);
@@ -73,12 +74,14 @@ try {
 }
 ```
 
-5. **Stop service when you do not need it anymore**
+5. **Stop service when you do not need it anymore (optional)**
 
 ``` java
 Intent audioService = new Intent(this, AudioService.class);
 stopService(audioService);
 ```
+
+There is a default behaviour for AudioView2 to start service automatically if it is not running yet. You can disable this by setting AudioView2.setAutoStartServie(false), but you can not omit 2 and 5 steps in this case. 
 
 
 ## Attach to service to implement your own behaviour
@@ -105,12 +108,12 @@ private ServiceConnection mServiceConnection = new ServiceConnection() {
 ``` java
 private void bindAudioService() {
     Intent intent = new Intent(getContext(), AudioService.class);
-    getContext().bindService(intent, mServiceConnection, 0);
+    getApplicationContext().bindService(intent, mServiceConnection, 0);
 }
 
 private void unbindAudioService() {
     try {
-        getContext().unbindService(mServiceConnection);
+        getApplicationContext().unbindService(mServiceConnection);
     } catch (Exception ignored) {
     }
 }
@@ -153,22 +156,61 @@ private void unregisterAudioReceiver() {
 }
 ```
 
+## Or send command to service to control playback
+- ACTION_START_AUDIO
+- ACTION_PAUSE_AUDIO
+- ACTION_STOP_AUDIO
+- ACTION_PREVIOUS_AUDIO
+- ACTION_NEXT_AUDIO
+- ACTION_CONTROL_AUDIO (to start/pause depending on current state)
+- ACTION_DESTROY_SERVICE (to immediately destroy)
+
+
+## Audio notification for service
+For AudioView2 and associated service foreground notification is applied. There are default playback controls plus close icon to stop and destroy service. You can setup following parameters through service intent or by proxying them over AudioView2: 
+#### AUDIO_NOTIFICATION_CHANNEL_ID
+__AudioView2.setServiceNotificationId(int id)__
+
+Integer to append to default string channel id for Android 8+
+
+#### AUDIO_NOTIFICATION_ICON_RES
+__AudioView2.setServiceNotificationIcon(int icon)__
+
+Drawable integer resource to show in status bar for notification
+
+#### AUDIO_NOTIFICATION_SHOW_CLOSE
+__AudioView2.setServiceNotificationShowClose(boolean showClose)__
+
+Boolean to show close service button or not
+
+#### AUDIO_NOTIFICATION_MINIFIED
+__AudioView2.setServiceNotificationMinified(boolean minified)__
+
+Boolean to hide previous/next and title views
+
 
 ## Styles & options
 #### primaryColor
-Set default color for FAB and SeekBar. By default it uses colorAccent from AppTheme.
+Set default color for FAB, SeekBar and ProgressBar. By default it uses colorAccent from AppTheme.
 
 #### minified
 Use alternative version of layout if true.
 
 #### customLayout
-Specify custom player layout reference. Should contain
-- TextViews R.id.time, R.id.title;
-- ImageButtons R.id.rewind, R.id.forward, R.id.play;
+Specify custom player layout reference. Must contain:
+- ImageButton R.id.play;
 - SeekBar R.id.progress;
 - ProgressBar R.id.indeterminate.
 
-Mutually exclusive with minified and primaryColor.
+Optionally:
+- TextViews R.id.title, R.id.time, R.id.total_time;
+- View R.id.rewind, R.id.forward
+
+If ```R.id.time``` defined, then it shows "time/total time" like "00:01/03:55".
+
+If ```R.id.total_time``` defined also, then ```R.id.time``` shows time like "00:01" and total time shows total like "03:55"
+
+Mutually exclusive with minified. If you want tint your own colors, just omit primaryColor.
 ```
 ...
 app:customLayout="@layout/my_custom_layout"

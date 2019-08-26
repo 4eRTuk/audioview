@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~           Copyright © 2019 Stanislav Petriakov
+  ~  Distributed under the Boost Software License, Version 1.0.
+  ~     (See accompanying file LICENSE_1_0.txt or copy at
+  ~           http://www.boost.org/LICENSE_1_0.txt)
+  -->
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!--<TextView-->
+    <!--android:id="@+id/artist"-->
+    <!--style="@style/TextAppearance.Compat.Notification.Title"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginBottom="4dp"-->
+    <!--android:ellipsize="end"-->
+    <!--android:maxLines="1"-->
+    <!--android:textSize="16sp"-->
+    <!--android:textStyle="bold"-->
+    <!--tools:text="Artist" />-->
+
+    <TextView
+        android:id="@+id/title"
+        style="@style/TextAppearance.Compat.Notification.Title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:textSize="16sp"
+        tools:text="Title" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/close"
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:background="@null"
+            android:padding="4dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_close_black_24dp"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/rewind"
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:adjustViewBounds="true"
+            android:background="@null"
+            android:padding="4dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_fast_rewind_black_24dp"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/play"
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:background="@null"
+            android:padding="4dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_play_arrow_white_24dp"
+            android:tint="#000"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/forward"
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:adjustViewBounds="true"
+            android:background="@null"
+            android:padding="4dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_fast_forward_black_24dp"
+            tools:ignore="ContentDescription" />
+    </LinearLayout>
+</LinearLayout>
