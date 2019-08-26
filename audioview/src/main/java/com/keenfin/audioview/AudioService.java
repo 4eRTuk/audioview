@@ -16,7 +16,11 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.view.View;
+import android.widget.RemoteViews;
+
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
