@@ -302,7 +302,7 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
     public void setDataSource(List tracks) throws RuntimeException {
         if (tracks.size() > 0) {
             Object itemClass = tracks.get(0);
-            boolean isCorrectClass = itemClass.getClass() == String.class || itemClass.getClass() == Uri.class || itemClass.getClass() == FileDescriptor.class;
+            boolean isCorrectClass = itemClass instanceof String || itemClass instanceof Uri || itemClass instanceof FileDescriptor;
 
             if (!isCorrectClass)
                 throw new RuntimeException("AudioView supports only String, Uri, FileDescriptor data sources now.");

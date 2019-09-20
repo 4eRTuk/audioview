@@ -354,7 +354,7 @@ public class AudioService extends Service {
     public int getTotalDuration() {
         try {
             return mMediaPlayer.getDuration();
-        } catch (IllegalStateException ignored) {
+        } catch (IllegalStateException | NullPointerException ignored) {
             return 0;
         }
     }
@@ -433,6 +433,8 @@ public class AudioService extends Service {
     }
 
     public void addToPlaylist(Object item) throws RuntimeException {
+        if (mTracks == null)
+            return;
         if (item.getClass() == String.class) {
             mTracks.add(item);
         } else if (item.getClass() == Uri.class) {
@@ -448,7 +450,7 @@ public class AudioService extends Service {
     public void setDataSource(List tracks) throws RuntimeException {
         if (tracks.size() > 0) {
             Object itemClass = tracks.get(0);
-            boolean isCorrectClass = itemClass.getClass() == String.class || itemClass.getClass() == Uri.class || itemClass.getClass() == FileDescriptor.class;
+            boolean isCorrectClass = itemClass instanceof String || itemClass instanceof Uri || itemClass instanceof FileDescriptor;
 
             if (!isCorrectClass)
                 throw new RuntimeException("AudioView supports only String, Uri, FileDescriptor data sources now.");
