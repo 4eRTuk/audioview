@@ -249,7 +249,8 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
         }
     }
 
-    protected void previousTrack() {
+    @Override
+    public void previousTrack() {
         if (isCorrectTrack(mCurrentTrack - 1))
             mCurrentTrack--;
         else
@@ -258,7 +259,8 @@ public class AudioView extends BaseAudioView implements View.OnClickListener {
         selectTrack(false);
     }
 
-    protected void nextTrack() {
+    @Override
+    public void nextTrack() {
         if (isCorrectTrack(mCurrentTrack + 1))
             mCurrentTrack++;
         else

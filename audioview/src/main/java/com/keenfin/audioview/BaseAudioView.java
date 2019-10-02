@@ -203,6 +203,10 @@ public abstract class BaseAudioView extends FrameLayout implements View.OnClickL
 
     public abstract void stop();
 
+    public abstract void nextTrack();
+
+    public abstract void previousTrack();
+
     public void setOnAudioViewListener(AudioViewListener audioViewListener) {
         mAudioViewListener = audioViewListener;
     }

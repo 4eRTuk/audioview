@@ -56,6 +56,10 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             mServiceBinder = null;
+            try {
+                getContext().unregisterReceiver(mAudioReceiver);
+            } catch (Exception ignored) {
+            }
         }
     };
 
@@ -196,18 +200,16 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     }
 
     private void unbindAudioService() {
-        if (getService() != null) {
-            try {
-                getContext().getApplicationContext().unbindService(mServiceConnection);
-            } catch (Exception ignored) {
-            }
+        try {
+            getContext().getApplicationContext().unbindService(mServiceConnection);
+        } catch (Exception ignored) {
+            Log.d("AudioView", ignored.getLocalizedMessage());
         }
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        mServiceBinder = null;
         bindAudioService();
         IntentFilter filter = new IntentFilter(ACTION_STATUS_AUDIO);
         getContext().registerReceiver(mAudioReceiver, filter);
@@ -219,10 +221,6 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         unbindAudioService();
-        try {
-            getContext().unregisterReceiver(mAudioReceiver);
-        } catch (Exception ignored) {
-        }
     }
 
     @Override
@@ -234,7 +232,7 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
             audioService.putExtra(AUDIO_NOTIFICATION_MINIFIED,  mServiceNotificationMinified);
             audioService.putExtra(AUDIO_NOTIFICATION_CHANNEL_ID,  mServiceNotificationId);
             audioService.putExtra(AUDIO_NOTIFICATION_ICON_RES,  mServiceNotificationIcon);
-            getContext().startService(audioService);
+            getContext().getApplicationContext().startService(audioService);
         }
 
         if (getService() == null) {
@@ -254,9 +252,9 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
         if (id == R.id.play) {
             getService().controlAudio();
         } else if (id == R.id.rewind) {
-            getService().previousTrack();
+            previousTrack();
         } else if (id == R.id.forward) {
-            getService().nextTrack();
+            nextTrack();
         }
     }
 
@@ -333,6 +331,18 @@ public class AudioView2 extends BaseAudioView implements View.OnClickListener {
     public void stop() {
         if (getService() != null && attached())
             getService().stop();
+    }
+
+    @Override
+    public void nextTrack() {
+        if (getService() != null && attached())
+            getService().nextTrack();
+    }
+
+    @Override
+    public void previousTrack() {
+        if (getService() != null && attached())
+            getService().previousTrack();
     }
 
     public void setTag(int tag) {

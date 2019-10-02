@@ -13,7 +13,7 @@ Simple Android audio view with a few controls. Basically it's a MediaPlayer wrap
 
 ``` gradle
 dependencies {
-    implementation 'com.4ert:audioview:1.4.8'
+    implementation 'com.4ert:audioview:{latest-version}'
 }
 ```
 
@@ -37,6 +37,8 @@ audioView.setDataSource(List<String/Uri/FileDescriptor>);
 audioView.start();
 audioView.pause();
 audioView.stop();
+audioView.previousTrack();
+audioView.nextTrack();
 ```
 
 

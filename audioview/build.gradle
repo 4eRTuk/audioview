@@ -20,7 +20,7 @@ ext {
     siteUrl = 'https://github.com/4eRTuk/audioview'
     gitUrl = 'https://github.com/4eRTuk/audioview.git'
 
-    libraryVersion = '1.4.10'
+    libraryVersion = '1.4.12'
 
     developerId = '4ert'
     developerName = 'Stanislav Petriakov'
@@ -37,8 +37,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 24
-        versionName "1.4.10"
+        versionCode 26
+        versionName "1.4.12"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
